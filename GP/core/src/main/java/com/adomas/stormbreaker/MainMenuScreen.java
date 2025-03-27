@@ -5,7 +5,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -76,14 +75,14 @@ public class MainMenuScreen implements Screen {
         table.add(playButton).pad(10).row();
         table.add(quitButton).pad(10);
 
-        Label.LabelStyle debugStyle = new Label.LabelStyle();
-        // debugStyle.font = skin.getFont("default-font");
-        debugStyle.font = font;  // our scaled-up font
-        debugStyle.fontColor = com.badlogic.gdx.graphics.Color.RED;
-        Label testLabel = new Label("Hello from MainMenu", debugStyle);
+        // Label.LabelStyle debugStyle = new Label.LabelStyle();
+        // // debugStyle.font = skin.getFont("default-font");
+        // debugStyle.font = font;  // our scaled-up font
+        // debugStyle.fontColor = com.badlogic.gdx.graphics.Color.RED;
+        // Label testLabel = new Label("Hello from MainMenu", debugStyle);
 
-        table.row();
-        table.add(testLabel).pad(10);
+        // table.row();
+        // table.add(testLabel).pad(10);
         table.setDebug(true);
     }
 
