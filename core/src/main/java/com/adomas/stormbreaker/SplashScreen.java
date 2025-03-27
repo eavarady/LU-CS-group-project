@@ -20,7 +20,7 @@ public class SplashScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        image = new Texture("libgdx.png");
+        image = new Texture("SplashScreen.png");
     }
 
     @Override

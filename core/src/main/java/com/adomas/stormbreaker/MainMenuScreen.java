@@ -57,7 +57,7 @@ public class MainMenuScreen implements Screen {
 
         playButton.addListener(e -> {
             if (playButton.isPressed()) {
-                game.setScreen(new GameplayScreen(game)); // TBI
+                game.setScreen(new GameplayScreen(game)); 
                 // Gdx.app.exit(); // temporary: exits the game instead of starting gameplay
                 return true;
             }
@@ -74,15 +74,6 @@ public class MainMenuScreen implements Screen {
 
         table.add(playButton).pad(10).row();
         table.add(quitButton).pad(10);
-
-        // Label.LabelStyle debugStyle = new Label.LabelStyle();
-        // // debugStyle.font = skin.getFont("default-font");
-        // debugStyle.font = font;  // our scaled-up font
-        // debugStyle.fontColor = com.badlogic.gdx.graphics.Color.RED;
-        // Label testLabel = new Label("Hello from MainMenu", debugStyle);
-
-        // table.row();
-        // table.add(testLabel).pad(10);
         table.setDebug(true);
     }
 
