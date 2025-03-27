@@ -2809,3 +2809,6 @@ GP/lwjgl3/build/tmp/.cache/expanded/zip_ffb2eb3806ffde20c8a41810d630747a/com/bad
 GP/lwjgl3/build/tmp/.cache/expanded/zip_ffb2eb3806ffde20c8a41810d630747a/com/badlogic/gdx/utils/SharedLibraryLoadRuntimeException.class
 GP/lwjgl3/build/tmp/.cache/expanded/zip_ffb2eb3806ffde20c8a41810d630747a/META-INF/MANIFEST.MF
 GP/lwjgl3/build/tmp/jar/MANIFEST.MF
+.DS_Store
+.vscode/
+.gradle/
