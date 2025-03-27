@@ -1,6 +1,6 @@
-/* 
- Simple gameplay screen prototype where a dot (player) moves towards the mouse cursor.
- Will need to create a separate player class at soeme point.
+/*
+ Simple gameplay screen prototype where a sprite (player) moves towards the mouse cursor.
+ Will need to create a separate player class at some point.
  */
 
 package com.adomas.stormbreaker;
@@ -9,13 +9,17 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class GameplayScreen implements Screen {
 
     private final StormbreakerGame game;
-    private float dotX = 100, dotY = 100;
     private final float speed = 200; // pixels per second
     private ShapeRenderer shapeRenderer;
+    private Texture soldierTexture;
+    private SpriteBatch spriteBatch;
+    private float soldierX = 100, soldierY = 100;
 
     public GameplayScreen(StormbreakerGame game) {
         this.game = game;
@@ -24,65 +28,50 @@ public class GameplayScreen implements Screen {
     @Override
     public void show() {
         shapeRenderer = new ShapeRenderer();
+        spriteBatch = new SpriteBatch();
+        soldierTexture = new Texture(Gdx.files.internal("PlayerSprite.png")); // replace with your actual filename
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1); // gray background for now
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // get mouse position
         float mouseX = Gdx.input.getX();
-        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY(); // flip y to match gdx coordinates
+        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
 
-        // calculate vector from dot to mouse
-        float dx = mouseX - dotX;
-        float dy = mouseY - dotY;
-
-        // calculate distance
+        float dx = mouseX - soldierX;
+        float dy = mouseY - soldierY;
         float length = (float)Math.sqrt(dx * dx + dy * dy);
 
-        // avoid division by zero
         if (length != 0) {
-            // normalize the direction vector
             float dirX = dx / length;
             float dirY = dy / length;
-
-            // perpendicular vector for left/right movement
             float perpX = -dirY;
             float perpY = dirX;
-
             float moveAmount = speed * delta;
 
-            // move toward mouse
             if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.W)) {
-                dotX += dirX * moveAmount;
-                dotY += dirY * moveAmount;
+                soldierX += dirX * moveAmount;
+                soldierY += dirY * moveAmount;
             }
-
-            // move away from mouse
             if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.S)) {
-                dotX -= dirX * moveAmount;
-                dotY -= dirY * moveAmount;
+                soldierX -= dirX * moveAmount;
+                soldierY -= dirY * moveAmount;
             }
-
-            // strafe left
             if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.A)) {
-                dotX += perpX * moveAmount;
-                dotY += perpY * moveAmount;
+                soldierX += perpX * moveAmount;
+                soldierY += perpY * moveAmount;
             }
-
-            // strafe right
             if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.D)) {
-                dotX -= perpX * moveAmount;
-                dotY -= perpY * moveAmount;
+                soldierX -= perpX * moveAmount;
+                soldierY -= perpY * moveAmount;
             }
         }
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, 1); // black
-        shapeRenderer.circle(dotX, dotY, 10); // small circle for the dot
-        shapeRenderer.end();
+        spriteBatch.begin();
+        spriteBatch.draw(soldierTexture, soldierX - soldierTexture.getWidth() / 2f, soldierY - soldierTexture.getHeight() / 2f);
+        spriteBatch.end();
     }
 
     @Override
@@ -100,5 +89,7 @@ public class GameplayScreen implements Screen {
     @Override
     public void dispose() {
         shapeRenderer.dispose();
+        spriteBatch.dispose();
+        soldierTexture.dispose();
     }
 }
