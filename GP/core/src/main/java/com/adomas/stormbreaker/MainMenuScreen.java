@@ -3,13 +3,13 @@ package com.adomas.stormbreaker;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class MainMenuScreen implements Screen {
 
@@ -27,9 +27,23 @@ public class MainMenuScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         skin = new Skin(Gdx.files.internal("uiskin.json")); 
-        BitmapFont font = skin.getFont("default-font");
-        System.out.println("Font line height: " + font.getLineHeight());
+        BitmapFont font = new BitmapFont(
+            Gdx.files.internal("default.fnt"), 
+            Gdx.files.internal("default.png"), 
+            false
+        );
+        if (skin.has("default-font", BitmapFont.class)) {
+            skin.remove("default-font", BitmapFont.class);
+        }
+        skin.add("default-font", font);
 
+        TextButton.TextButtonStyle textButtonStyle = skin.get("default", TextButton.TextButtonStyle.class);
+        textButtonStyle.font = font;
+        // Re-add the style if necessary (most cases this is not needed, but it's safe to do so)
+        skin.add("default", textButtonStyle);
+        
+        System.out.println("Font line height: " + font.getLineHeight());
+        
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
