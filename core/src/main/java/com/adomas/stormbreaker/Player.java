@@ -29,4 +29,12 @@ public class Player extends Character {
             rotation = (float)Math.toDegrees(Math.atan2(dy, dx)) - 90;
         }
     }
+
+    public void clampPosition(float screenWidth, float screenHeight) {
+        float halfWidth = texture.getWidth() / 2f;
+        float halfHeight = texture.getHeight() / 2f;
+
+        x = Math.max(halfWidth, Math.min(x, screenWidth - halfWidth));
+        y = Math.max(halfHeight, Math.min(y, screenHeight - halfHeight));
+    }
 }
