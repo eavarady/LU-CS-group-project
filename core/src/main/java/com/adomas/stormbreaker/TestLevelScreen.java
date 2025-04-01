@@ -1,0 +1,91 @@
+package com.adomas.stormbreaker;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+/**
+ * this fully replicates GameplayScreen logic but extends LevelScreen.
+ * it should behave identically to GameplayScreen
+ */
+public class TestLevelScreen extends LevelScreen {
+
+    private final float speed = 200f;
+    private Player player;
+
+    private OrthographicCamera camera;
+    private Viewport viewport;
+
+    public TestLevelScreen(StormbreakerGame game) {
+        super(game);
+    }
+
+    @Override
+    protected void initializeLevel() {
+
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(1920, 1080, camera); // same resolution
+        viewport.apply();
+
+        // create the player
+        player = new Player(100, 100, speed, "PlayerSprite.png", camera);
+
+        // center camera
+        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
+    }
+
+    @Override
+    public void render(float delta) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // update player
+        player.update(delta);
+
+        // clamp position to viewport's width/height
+        player.clampPosition(viewport.getWorldWidth(), viewport.getWorldHeight(),
+                             viewport.getWorldWidth(), viewport.getWorldHeight());
+
+        // camera follows player
+        camera.position.set(player.getX(), player.getY(), 0);
+        camera.update();
+
+        // set projection for spriteBatch
+        spriteBatch.setProjectionMatrix(camera.combined);
+
+        // optional: draw the dark-gray background with shapeRenderer
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.DARK_GRAY);
+        shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        shapeRenderer.end();
+
+        // draw the player
+        spriteBatch.begin();
+        player.render(spriteBatch);
+        spriteBatch.end();
+
+        // draw white border
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        shapeRenderer.end();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        System.out.println("Resizing to: " + width + "x" + height);
+        viewport.update(width, height);
+        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        player.dispose();
+    }
+}
