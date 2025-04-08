@@ -1,11 +1,11 @@
 package com.adomas.stormbreaker;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 
 public class SplashScreen implements Screen {
 
@@ -20,14 +20,14 @@ public class SplashScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        image = new Texture("SplashScreen.png");
+        image = new Texture("STORMBREAKER_splash_v1.png");
     }
 
     @Override
 public void render(float delta) {
     ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
     batch.begin();
-    batch.draw(image, 140, 210);
+    batch.draw(image, Gdx.graphics.getWidth() / 2 - image.getWidth() / 2, Gdx.graphics.getHeight() / 2 - image.getHeight() / 2 - 150);
     batch.end();
 
     // Wait for any key or mouse press
