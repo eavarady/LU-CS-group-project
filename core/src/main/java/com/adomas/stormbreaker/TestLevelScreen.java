@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
 
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
@@ -68,6 +69,37 @@ public class TestLevelScreen extends LevelScreen {
         spriteBatch.begin();
         player.render(spriteBatch);
         spriteBatch.end();
+
+        // draw dynamic crosshair based on distance from player to mouse
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+
+        // get mouse position in screen coordinates and convert to world coordinates
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.input.getY();
+        Vector3 mouseWorld = new Vector3(mouseX, mouseY, 0);
+        viewport.unproject(mouseWorld);
+
+        // calculate distance from player to mouse
+        float dx = mouseWorld.x - player.getX();
+        float dy = mouseWorld.y - player.getY();
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        // map distance to crosshair spacing (clamp between 10 and beyond)
+        float expansionFactor = 2.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
+        float spacing = Math.max(10f, expansionFactor * (float) Math.sqrt(distance));
+
+        // draw crosshair lines
+        float cx = mouseWorld.x;
+        float cy = mouseWorld.y;
+        shapeRenderer.line(cx - spacing, cy, cx - spacing / 2, cy); // left
+        shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
+        shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
+        shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
+        // TODO: remove mouse cursor and only keep the crosshair
+
+
+        shapeRenderer.end();
 
         // draw white border
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
