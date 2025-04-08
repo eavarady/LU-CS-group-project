@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
  */
 public class TestLevelScreen extends LevelScreen {
 
-    private final float speed = 200f;
+    private final float speed = 100f;
     private Player player;
 
     private OrthographicCamera camera;
@@ -29,11 +29,11 @@ public class TestLevelScreen extends LevelScreen {
     protected void initializeLevel() {
 
         camera = new OrthographicCamera();
-        viewport = new FitViewport(1920, 1080, camera); // same resolution
+        viewport = new FitViewport(1280, 720, camera); // same resolution
         viewport.apply();
 
         // create the player
-        player = new Player(100, 100, speed, "PlayerSprite.png", camera);
+        player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
         // center camera
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
