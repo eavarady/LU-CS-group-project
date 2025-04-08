@@ -4,10 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
@@ -96,8 +96,8 @@ public class TestLevelScreen extends LevelScreen {
         shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
         shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
         shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
-        // TODO: remove mouse cursor and only keep the crosshair
-
+        // remove mouse cursor and only keep the crosshair
+        Gdx.input.setCursorCatched(true);
 
         shapeRenderer.end();
 
@@ -106,6 +106,12 @@ public class TestLevelScreen extends LevelScreen {
         shapeRenderer.setColor(Color.WHITE);
         shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         shapeRenderer.end();
+
+        // Escape key to exit
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
+            Gdx.input.setCursorCatched(false); // show mouse cursor again
+            game.setScreen(new MainMenuScreen(game)); // go back to main menu
+        }
     }
 
     @Override
