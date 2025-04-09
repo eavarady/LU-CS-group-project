@@ -1,5 +1,6 @@
 package com.adomas.stormbreaker;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,18 +9,26 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.adomas.stormbreaker.Bullet;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.MathUtils;
 
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
- * it should behave identically to GameplayScreen
+ * it should behave identically to GameplayScreen. 
+ * GameplayScreen is redundant right now.
  */
 public class TestLevelScreen extends LevelScreen {
 
     private final float speed = 100f;
     private Player player;
+    private Array<Bullet> bullets = new Array<>();
 
     private OrthographicCamera camera;
     private Viewport viewport;
+
+    private float shootCooldown = 0.2f; // seconds between shots to prevent spammming
+    private float timeSinceLastShot = 0f;
 
     public TestLevelScreen(StormbreakerGame game) {
         super(game);
@@ -86,8 +95,8 @@ public class TestLevelScreen extends LevelScreen {
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         // map distance to crosshair spacing (clamp between 10 and beyond)
-        float expansionFactor = 2.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
-        float spacing = Math.max(10f, expansionFactor * (float) Math.sqrt(distance));
+        float expansionFactor = 1.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
+        float spacing = Math.max(5f, expansionFactor * (float) Math.sqrt(distance));
 
         // draw crosshair lines
         float cx = mouseWorld.x;
@@ -100,6 +109,42 @@ public class TestLevelScreen extends LevelScreen {
         Gdx.input.setCursorCatched(true);
 
         shapeRenderer.end();
+
+        // bullet code
+        timeSinceLastShot += delta;
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown) {
+        // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
+            float bulletX = player.getX();
+            float bulletY = player.getY();
+            float dirX = dx / distance;
+            float dirY = dy / distance;
+
+            // apply random spread angle
+            float spreadAngle = 3.4f; // degree interval
+            float angle = MathUtils.random(-spreadAngle, spreadAngle);
+            float radians = angle * MathUtils.degreesToRadians;
+
+            float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
+            float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
+
+            bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY));
+            timeSinceLastShot = 0f; // reset cooldown
+        }
+
+        // bullet is a black dot for now
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.BLACK);
+        for (int i = bullets.size - 1; i >= 0; i--) {
+            Bullet b = bullets.get(i);
+            b.update(delta);
+            b.render(shapeRenderer);
+            if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
+                bullets.removeIndex(i);
+            }
+        }
+        shapeRenderer.end();
+
+
 
         // draw white border
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
