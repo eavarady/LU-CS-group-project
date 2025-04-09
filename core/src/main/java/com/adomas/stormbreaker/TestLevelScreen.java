@@ -92,10 +92,21 @@ public class TestLevelScreen extends LevelScreen {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.WHITE);
 
-        // get mouse position in screen coordinates and convert to world coordinates
-        float mouseX = Gdx.input.getX();
-        float mouseY = Gdx.input.getY();
-        Vector3 mouseWorld = new Vector3(mouseX, mouseY, 0);
+        // get mouse position in screen coordinates
+        int mouseX = Gdx.input.getX();
+        int mouseY = Gdx.input.getY();
+
+        // clamp mouse position to screen bounds
+        int clampedMouseX = MathUtils.clamp(mouseX, 0, Gdx.graphics.getWidth() - 1);
+        int clampedMouseY = MathUtils.clamp(mouseY, 0, Gdx.graphics.getHeight() - 1);
+
+        // if the mouse is outside the screen, reset its position
+        if (mouseX != clampedMouseX || mouseY != clampedMouseY) {
+            Gdx.input.setCursorPosition(clampedMouseX, clampedMouseY);
+        }
+
+        // convert clamped mouse position to world coordinates
+        Vector3 mouseWorld = new Vector3(clampedMouseX, clampedMouseY, 0);
         viewport.unproject(mouseWorld);
 
         // calculate distance from player to mouse
