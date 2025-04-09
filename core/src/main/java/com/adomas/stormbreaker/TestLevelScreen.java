@@ -1,18 +1,16 @@
 package com.adomas.stormbreaker;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.adomas.stormbreaker.Bullet;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.math.MathUtils;
-import com.adomas.stormbreaker.Enemy;
 
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
@@ -182,7 +180,7 @@ public class TestLevelScreen extends LevelScreen {
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
             Gdx.input.setCursorCatched(false); // show mouse cursor again
-            game.setScreen(new MainMenuScreen(game)); // go back to main menu
+            game.setScreen(new PauseMenuScreen(game, this)); // go back to main menu
         }
     }
 
