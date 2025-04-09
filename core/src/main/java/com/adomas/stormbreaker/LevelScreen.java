@@ -25,10 +25,12 @@ public abstract class LevelScreen implements Screen {
     @Override
     public void show() {
         if (!levelInitialized) {
+            // We'll create both batch + shapeRenderer here
             spriteBatch = new SpriteBatch();
             shapeRenderer = new ShapeRenderer();
-            initializeLevel(); // abstract method in TestLevelScreen
-            levelInitialized = true;
+            // Let child classes do camera init, player init, etc.
+            initializeLevel();
+            levelInitialized = true; // boolean to check if the level is initialized for the pause menu
         }
         Gdx.input.setCursorCatched(true);
     }
