@@ -1,5 +1,6 @@
 package com.adomas.stormbreaker;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -15,6 +16,7 @@ public abstract class LevelScreen implements Screen {
     protected final StormbreakerGame game;
     protected SpriteBatch spriteBatch;
     protected ShapeRenderer shapeRenderer;
+    private boolean levelInitialized = false;
 
     public LevelScreen(StormbreakerGame game) {
         this.game = game;
@@ -22,12 +24,15 @@ public abstract class LevelScreen implements Screen {
 
     @Override
     public void show() {
-        // We'll create both batch + shapeRenderer here
-        spriteBatch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-        
-        // Let child classes do camera init, player init, etc.
-        initializeLevel();
+        if (!levelInitialized) {
+            // We'll create both batch + shapeRenderer here
+            spriteBatch = new SpriteBatch();
+            shapeRenderer = new ShapeRenderer();
+            // Let child classes do camera init, player init, etc.
+            initializeLevel();
+            levelInitialized = true; // boolean to check if the level is initialized for the pause menu
+        }
+        Gdx.input.setCursorCatched(true);
     }
 
     /**
