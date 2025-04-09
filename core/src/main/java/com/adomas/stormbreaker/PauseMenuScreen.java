@@ -1,6 +1,7 @@
 package com.adomas.stormbreaker;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -92,6 +93,12 @@ public class PauseMenuScreen implements Screen {
 
         stage.act(delta);
         stage.draw();
+        
+        // Escape key to RESUME
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.setScreen(previousScreen);
+            Gdx.input.setCursorCatched(true);
+        }
     }
 
     @Override
