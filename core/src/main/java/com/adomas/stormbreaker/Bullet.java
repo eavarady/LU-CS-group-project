@@ -5,8 +5,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class Bullet {
     float x, y;
     float vx, vy;
-    float speed = 1700f;
-    float radius = 2.6f;
+    //float speed = 1700f;
+    //float radius = 2.6f;
+    float speed = 3000f;
+    float radius = 2.0f;
 
     public Bullet(float x, float y, float vx, float vy) {
         this.x = x;
