@@ -14,6 +14,13 @@ public class Bullet {
         this.vx = vx;
         this.vy = vy;
     }
+    public float getX() {
+        return x;
+    }
+    
+    public float getY() {
+        return y;
+    }
 
     public void update(float delta) {
         x += vx * speed * delta;

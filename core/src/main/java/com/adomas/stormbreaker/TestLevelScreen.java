@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.adomas.stormbreaker.Bullet;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.MathUtils;
+import com.adomas.stormbreaker.Enemy;
 
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
@@ -23,11 +24,12 @@ public class TestLevelScreen extends LevelScreen {
     private final float speed = 100f;
     private Player player;
     private Array<Bullet> bullets = new Array<>();
+    private Array<Enemy> enemies = new Array<>();
 
     private OrthographicCamera camera;
     private Viewport viewport;
 
-    private float shootCooldown = 0.2f; // seconds between shots to prevent spammming
+    private float shootCooldown = 0.18f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
 
     public TestLevelScreen(StormbreakerGame game) {
@@ -43,6 +45,12 @@ public class TestLevelScreen extends LevelScreen {
 
         // create the player
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
+
+        // add a few static enemies
+        enemies.add(new Enemy(400, 300, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(600, 400, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 200, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(1000, 500, 0, "enemy_blob.png"));
 
         // center camera
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
@@ -67,7 +75,7 @@ public class TestLevelScreen extends LevelScreen {
         // set projection for spriteBatch
         spriteBatch.setProjectionMatrix(camera.combined);
 
-        // optional: draw the dark-gray background with shapeRenderer
+        // draw a dark-gray background 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.DARK_GRAY);
@@ -77,6 +85,10 @@ public class TestLevelScreen extends LevelScreen {
         // draw the player
         spriteBatch.begin();
         player.render(spriteBatch);
+        // render enemies
+        for (Enemy e : enemies) {
+            e.render(spriteBatch);
+        }
         spriteBatch.end();
 
         // draw dynamic crosshair based on distance from player to mouse
@@ -110,7 +122,8 @@ public class TestLevelScreen extends LevelScreen {
 
         shapeRenderer.end();
 
-        // bullet code
+        ////////////////
+        // bullet and enemy code
         timeSinceLastShot += delta;
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown) {
         // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
@@ -138,12 +151,26 @@ public class TestLevelScreen extends LevelScreen {
             Bullet b = bullets.get(i);
             b.update(delta);
             b.render(shapeRenderer);
+            // check bullet collision with enemies
+            for (int j = enemies.size - 1; j >= 0; j--) {
+                Enemy e = enemies.get(j);
+                if (e.isDead()) continue;
+                float dxE = e.getX() - b.getX();
+                float dyE = e.getY() - b.getY();
+                float distSq = dxE * dxE + dyE * dyE;
+                float hitRadius = 15.5f; // we can adjust this hitbox size later
+                if (distSq < hitRadius * hitRadius) {
+                    e.takeDamage(25);
+                    bullets.removeIndex(i);
+                    break; // only one bullet per enemy per frame
+                }
+            }
             if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
                 bullets.removeIndex(i);
             }
         }
         shapeRenderer.end();
-
+        //////////////
 
 
         // draw white border
