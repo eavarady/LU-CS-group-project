@@ -11,10 +11,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.adomas.stormbreaker.Bullet;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.math.MathUtils;
-import com.adomas.stormbreaker.Enemy;
 /**
  * this fully replicates GameplayScreen logic but extends LevelScreen.
  * it should behave identically to GameplayScreen. 
@@ -110,17 +106,29 @@ public class TestLevelScreen extends LevelScreen {
         // map distance to crosshair spacing (clamp between 10 and beyond)
         float expansionFactor = 1.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
         float spacing = Math.max(5f, expansionFactor * (float) Math.sqrt(distance));
+        
+        // Adjust the circle radius to match the inner tips of the crosshair
+        float innerCircleRadius = spacing / 2f; // Inner circle touches the inner tips
 
         // draw crosshair lines
         float cx = mouseWorld.x;
         float cy = mouseWorld.y;
-        shapeRenderer.line(cx - spacing, cy, cx - spacing / 2, cy); // left
-        shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
-        shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
-        shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
+        // OLD CROSSHAIR CODE
+        // shapeRenderer.line(cx - spacing, cy, cx - spacing / 2, cy); // left
+        // shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
+        // shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
+        // shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
+        shapeRenderer.line(cx - spacing, cy, cx - innerCircleRadius, cy); // left
+        shapeRenderer.line(cx + innerCircleRadius, cy, cx + spacing, cy); // right
+        shapeRenderer.line(cx, cy - spacing, cx, cy - innerCircleRadius); // down
+        shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + spacing); // up
+
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
-
+        // Draw the invisible circle for debugging
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
+    
         shapeRenderer.end();
 
         ////////////////
@@ -134,10 +142,14 @@ public class TestLevelScreen extends LevelScreen {
             float dirY = dy / distance;
 
             // apply random spread angle
-            float spreadAngle = 3.4f; // degree interval
+            //float spreadAngle = 3.4f; // degree interval
+            //float angle = MathUtils.random(-spreadAngle, spreadAngle);
+            // Calculate the spread angle based on the inner circle radius
+            float spreadRadius = innerCircleRadius; // Use the inner circle radius
+            float spreadAngle = MathUtils.atan2(spreadRadius, distance) * MathUtils.radiansToDegrees;
+            //
             float angle = MathUtils.random(-spreadAngle, spreadAngle);
             float radians = angle * MathUtils.degreesToRadians;
-
             float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
             float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
 
