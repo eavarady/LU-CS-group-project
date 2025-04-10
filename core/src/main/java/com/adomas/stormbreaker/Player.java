@@ -27,6 +27,7 @@ public class Player extends Character {
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             boolean blocked = false;
             for (Enemy e : enemies) {
+                if (e.isDead()) continue;
                 float dx = (x - moveAmount) - e.getX();
                 float dy = y - e.getY();
                 float distanceSq = dx * dx + dy * dy;
@@ -41,6 +42,7 @@ public class Player extends Character {
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             boolean blocked = false;
             for (Enemy e : enemies) {
+                if (e.isDead()) continue;
                 float dx = (x + moveAmount) - e.getX();
                 float dy = y - e.getY();
                 float distanceSq = dx * dx + dy * dy;
@@ -57,6 +59,7 @@ public class Player extends Character {
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             boolean blocked = false;
             for (Enemy e : enemies) {
+                if (e.isDead()) continue;
                 float dx = x - e.getX();
                 float dy = (y + moveAmount) - e.getY();
                 float distanceSq = dx * dx + dy * dy;
@@ -71,6 +74,7 @@ public class Player extends Character {
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             boolean blocked = false;
             for (Enemy e : enemies) {
+                if (e.isDead()) continue;
                 float dx = x - e.getX();
                 float dy = (y - moveAmount) - e.getY();
                 float distanceSq = dx * dx + dy * dy;
