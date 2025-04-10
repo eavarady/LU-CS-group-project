@@ -1,5 +1,6 @@
 package com.adomas.stormbreaker;
 
+import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -22,6 +23,7 @@ public class TestLevelScreen extends LevelScreen {
     private Player player;
     private Array<Bullet> bullets = new Array<>();
     private Array<Enemy> enemies = new Array<>();
+    private Array<CollisionRectangle> mapCollisions = new Array<>();
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -59,7 +61,7 @@ public class TestLevelScreen extends LevelScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // update player
-        player.update(delta, enemies);
+        player.update(delta, enemies, mapCollisions); // no map collisions yet
 
         // clamp position to viewport's width/height
         player.clampPosition(viewport.getWorldWidth(), viewport.getWorldHeight(),
@@ -173,24 +175,11 @@ public class TestLevelScreen extends LevelScreen {
         shapeRenderer.setColor(Color.BLACK);
         for (int i = bullets.size - 1; i >= 0; i--) {
             Bullet b = bullets.get(i);
-            b.update(delta);
+            b.update(delta, enemies); // Pass the enemies array to the bullet's update method
             b.render(shapeRenderer);
-            // check bullet collision with enemies
-            for (int j = enemies.size - 1; j >= 0; j--) {
-                Enemy e = enemies.get(j);
-                if (e.isDead()) continue;
-                float dxE = e.getX() - b.getX();
-                float dyE = e.getY() - b.getY();
-                float distSq = dxE * dxE + dyE * dyE;
-                float hitRadius = 15.5f; // we can adjust this hitbox size later
-                if (distSq < hitRadius * hitRadius) {
-                    e.takeDamage(25);
-                    bullets.removeIndex(i);
-                    break; // only one bullet per enemy per frame
-                }
-            }
+
             if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
-                bullets.removeIndex(i);
+                bullets.removeIndex(i); // Remove bullet if it goes off-screen
             }
         }
         shapeRenderer.end();
