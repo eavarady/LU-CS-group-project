@@ -59,7 +59,7 @@ public class TestLevelScreen extends LevelScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // update player
-        player.update(delta);
+        player.update(delta, enemies);
 
         // clamp position to viewport's width/height
         player.clampPosition(viewport.getWorldWidth(), viewport.getWorldHeight(),

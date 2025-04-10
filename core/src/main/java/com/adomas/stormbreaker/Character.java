@@ -40,4 +40,8 @@ public abstract class Character {
     }
 
     public abstract void update(float delta);
+    
+    public Texture getTexture() {
+        return texture;
+    }
 }
