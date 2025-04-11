@@ -1,6 +1,6 @@
 package com.adomas.stormbreaker;
 
-import com.adomas.stormbreaker.tools.CollisionRectangle;
+import com.adomas.stormbreaker.tools.MapManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -13,14 +13,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-
 public class MainGameplayScreen extends LevelScreen {
 
     private final float speed = 100f;
     private Player player;
     private Array<Bullet> bullets = new Array<>();
     private Array<Enemy> enemies = new Array<>();
-    private Array<CollisionRectangle> mapCollisions = new Array<>();
+    private MapManager mapManager;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -38,6 +37,10 @@ public class MainGameplayScreen extends LevelScreen {
         camera = new OrthographicCamera();
         viewport = new FitViewport(1280, 720, camera); // same resolution
         viewport.apply();
+
+        // Initialize MapManager with the path to your Tiled map
+        System.out.println(Gdx.files.internal("maps/test_map.tmx").file().getAbsolutePath());
+        mapManager = new MapManager("maps/test_map.tmx");
 
         // create the player
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
@@ -58,7 +61,7 @@ public class MainGameplayScreen extends LevelScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // update player
-        player.update(delta, enemies, mapCollisions); // no map collisions yet
+        player.update(delta, enemies, mapManager.getCollisionRectangles());
 
         // clamp position to viewport's width/height
         player.clampPosition(viewport.getWorldWidth(), viewport.getWorldHeight(),
@@ -206,6 +209,7 @@ public class MainGameplayScreen extends LevelScreen {
     @Override
     public void dispose() {
         super.dispose();
+        mapManager.dispose();
         player.dispose();
     }
 }
