@@ -33,26 +33,30 @@ public class MainGameplayScreen extends LevelScreen {
 
     @Override
     protected void initializeLevel() {
+        // Initialize MapManager with the path to your Tiled map
+        //System.out.println(Gdx.files.internal("maps/test_map.tmx").file().getAbsolutePath());
+        mapManager = new MapManager("maps/test_map.tmx");
+        // Get map dimensions in world units
+        float mapWidth = mapManager.getMapWidth(); // Map width in world units
+        float mapHeight = mapManager.getMapHeight(); // Map height in world units
 
+        // Initialize camera and viewport with map dimensions
         camera = new OrthographicCamera();
-        viewport = new FitViewport(1280, 720, camera); // same resolution
+        viewport = new FitViewport(mapWidth, mapHeight, camera); // Set viewport size to match map
         viewport.apply();
 
-        // Initialize MapManager with the path to your Tiled map
-        System.out.println(Gdx.files.internal("maps/test_map.tmx").file().getAbsolutePath());
-        mapManager = new MapManager("maps/test_map.tmx");
-
-        // create the player
+        // Create the player
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
-        // add a few static enemies
+        // Add a few static enemies
         enemies.add(new Enemy(400, 300, 0, "enemy_blob.png"));
         enemies.add(new Enemy(600, 400, 0, "enemy_blob.png"));
         enemies.add(new Enemy(800, 200, 0, "enemy_blob.png"));
         enemies.add(new Enemy(1000, 500, 0, "enemy_blob.png"));
 
-        // center camera
-        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
+        // Center camera on the map
+        camera.position.set(mapWidth / 2, mapHeight / 2, 0);
+        camera.update();
     }
 
     @Override
@@ -71,15 +75,18 @@ public class MainGameplayScreen extends LevelScreen {
         camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
 
+        // Render the map
+        mapManager.render(camera);
+
         // set projection for spriteBatch
         spriteBatch.setProjectionMatrix(camera.combined);
 
         // draw a dark-gray background 
         shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.DARK_GRAY);
-        shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-        shapeRenderer.end();
+        // shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        // shapeRenderer.setColor(Color.DARK_GRAY);
+        // shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        // shapeRenderer.end();
 
         // draw the player
         spriteBatch.begin();

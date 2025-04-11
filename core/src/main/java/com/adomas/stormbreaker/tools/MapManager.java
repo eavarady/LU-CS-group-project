@@ -42,6 +42,14 @@ public class MapManager {
         return collisionRectangles;
     }
 
+    public float getMapWidth() {
+        return map.getProperties().get("width", Integer.class) * map.getProperties().get("tilewidth", Integer.class);
+    }
+
+    public float getMapHeight() {
+        return map.getProperties().get("height", Integer.class) * map.getProperties().get("tileheight", Integer.class);
+    }
+
     public void dispose() {
         if (map != null) {
             map.dispose();
