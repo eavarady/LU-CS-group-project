@@ -139,8 +139,8 @@ public class TestLevelScreen extends LevelScreen {
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
         // Draw the invisible circle for debugging
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
+        //shapeRenderer.setColor(Color.RED);
+        //shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
     
         shapeRenderer.end();
 
@@ -170,9 +170,9 @@ public class TestLevelScreen extends LevelScreen {
             timeSinceLastShot = 0f; // reset cooldown
         }
 
-        // bullet is a black dot for now
+        // bullet is a white dot for now
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.BLACK);
+        shapeRenderer.setColor(Color.WHITE);
         for (int i = bullets.size - 1; i >= 0; i--) {
             Bullet b = bullets.get(i);
             b.update(delta, enemies); // Pass the enemies array to the bullet's update method

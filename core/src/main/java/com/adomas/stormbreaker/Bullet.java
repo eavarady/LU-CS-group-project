@@ -9,7 +9,7 @@ public class Bullet {
     float x, y;
     float vx, vy;
     float speed = 10000f;
-    float radius = 2.0f;
+    float radius = 1.0f;
 
     public Bullet(float x, float y, float vx, float vy) {
         this.x = x;
