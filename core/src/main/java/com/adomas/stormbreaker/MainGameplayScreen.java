@@ -12,12 +12,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-/**
- * this fully replicates GameplayScreen logic but extends LevelScreen.
- * it should behave identically to GameplayScreen. 
- * GameplayScreen is redundant right now.
- */
-public class TestLevelScreen extends LevelScreen {
+
+
+public class MainGameplayScreen extends LevelScreen {
 
     private final float speed = 100f;
     private Player player;
@@ -31,7 +28,7 @@ public class TestLevelScreen extends LevelScreen {
     private float shootCooldown = 0.18f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
 
-    public TestLevelScreen(StormbreakerGame game) {
+    public MainGameplayScreen(StormbreakerGame game) {
         super(game);
     }
 

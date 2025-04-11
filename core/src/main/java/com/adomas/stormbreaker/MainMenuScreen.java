@@ -57,7 +57,7 @@ public class MainMenuScreen implements Screen {
 
         playButton.addListener(e -> {
             if (playButton.isPressed()) {
-                game.setScreen(new TestLevelScreen(game)); 
+                game.setScreen(new MainGameplayScreen(game)); 
                 // game.setScreen(new GameplayScreen(game));
                 // Gdx.app.exit(); // temporary: exits the game instead of starting gameplay
                 return true;

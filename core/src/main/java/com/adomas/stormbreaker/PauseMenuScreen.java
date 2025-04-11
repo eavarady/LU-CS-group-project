@@ -66,7 +66,7 @@ public class PauseMenuScreen implements Screen {
 
         restartButton.addListener(e -> {
             if (restartButton.isPressed()) {
-                game.setScreen(new TestLevelScreen(game)); // restart level
+                game.setScreen(new MainGameplayScreen(game)); // restart level
                 return true;
             }
             return false;
