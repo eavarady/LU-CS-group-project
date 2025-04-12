@@ -130,6 +130,39 @@ public class MainGameplayScreen extends LevelScreen {
         // Adjust the circle radius to match the inner tips of the crosshair
         float innerCircleRadius = spacing / 2f; // Inner circle touches the inner tips
 
+
+        // when G key is held down, enter grenade aim mode
+        if (Gdx.input.isKeyPressed(Input.Keys.G)) {
+           
+            float maxGrenadeDistance = 250f; // max distance for grenade throw aiming, we'll adjust later
+            float grenadeAimAngle = MathUtils.atan2(dy, dx);
+            distance = Math.min(distance, maxGrenadeDistance);
+            float cx = player.getX() + distance * MathUtils.cos(grenadeAimAngle);
+            float cy = player.getY() + distance * MathUtils.sin(grenadeAimAngle);
+             // draw dashed line from player to cursor
+            shapeRenderer.setColor(Color.WHITE);
+            float px = player.getX();
+            float py = player.getY();
+
+            float dashLength = 20f;
+            int segments = Math.max(2, (int)(distance / dashLength) * 2); // ensure even number of segments
+
+            for (int i = 0; i < segments; i += 2) {
+                float t1 = i / (float) segments;
+                float t2 = (i + 1) / (float) segments;
+                float x1 = MathUtils.lerp(px, cx, t1);
+                float y1 = MathUtils.lerp(py, cy, t1);
+                float x2 = MathUtils.lerp(px, cx, t2);
+                float y2 = MathUtils.lerp(py, cy, t2);
+                shapeRenderer.line(x1, y1, x2, y2);
+            }
+
+            // draw grenade target circle at cursor
+            float grenadeRadius = 6f;
+            shapeRenderer.circle(cx, cy, grenadeRadius);
+        }
+
+
         // draw crosshair lines
         float cx = mouseWorld.x;
         float cy = mouseWorld.y;
@@ -151,10 +184,12 @@ public class MainGameplayScreen extends LevelScreen {
     
         shapeRenderer.end();
 
+        
         ////////////////
         // bullet and enemy code
         timeSinceLastShot += delta;
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown && 
+            !Gdx.input.isKeyPressed(Input.Keys.G)) {
         // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
             float bulletX = player.getX();
             float bulletY = player.getY();
