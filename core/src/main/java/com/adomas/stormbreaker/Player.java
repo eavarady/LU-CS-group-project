@@ -2,21 +2,31 @@ package com.adomas.stormbreaker;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
+import java.util.Random;
 
-public class Player extends Character {
+public class Player extends Character implements Disposable {
     private OrthographicCamera camera;
     private CollisionRectangle collisionRectangle;
     private float playerRadius;
+
+    private Sound stepSound;
+    private long stepSoundId = -1; // ID for the currently looping sound
+    private boolean isWalking = false;
+    private Random rand = new Random(); // used to randomize pitch
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
         this.collisionRectangle = new CollisionRectangle(x, y, texture.getWidth(), texture.getHeight());
         this.playerRadius = texture.getWidth() / 2f;
+
+        stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
@@ -69,6 +79,23 @@ public class Player extends Character {
 
         // Update collision rectangle position
         collisionRectangle.move(x, y);
+
+        boolean anyKeyPressed = Gdx.input.isKeyPressed(Input.Keys.W) ||
+                                Gdx.input.isKeyPressed(Input.Keys.A) ||
+                                Gdx.input.isKeyPressed(Input.Keys.S) ||
+                                Gdx.input.isKeyPressed(Input.Keys.D);
+
+        if (anyKeyPressed && !isWalking && stepSoundId == -1) {
+            float volume = 0.5f;
+            float pitch = 0.9f + rand.nextFloat() * 0.2f;
+            stepSoundId = stepSound.loop(volume);
+            stepSound.setPitch(stepSoundId, pitch);
+            isWalking = true;
+        } else if (!anyKeyPressed && isWalking) {
+            stepSound.stop(stepSoundId);
+            stepSoundId = -1;
+            isWalking = false;
+        }
     }
 
     @Override
@@ -125,7 +152,16 @@ public class Player extends Character {
         }
         return false;
     }
+
     public float getRadius() {
         return playerRadius;
+    }
+
+    @Override
+    public void dispose() {
+        if (stepSound != null) {
+            stepSound.dispose(); // free sound resource(not sure if im supposed to put it here but saw in video)
+        }
+        super.dispose();
     }
 }
