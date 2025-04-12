@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.adomas.stormbreaker.Enemy;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 
 public class Player extends Character {

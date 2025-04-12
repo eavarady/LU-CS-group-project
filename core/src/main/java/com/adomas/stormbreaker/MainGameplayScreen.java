@@ -18,6 +18,7 @@ public class MainGameplayScreen extends LevelScreen {
     private final float speed = 100f;
     private Player player;
     private Array<Bullet> bullets = new Array<>();
+    private Array<Grenade> grenades = new Array<>();
     private Array<Enemy> enemies = new Array<>();
     private MapManager mapManager;
 
@@ -26,6 +27,7 @@ public class MainGameplayScreen extends LevelScreen {
 
     private float shootCooldown = 0.18f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
+    private boolean wasGKeyPressedLastFrame = false;
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -162,6 +164,20 @@ public class MainGameplayScreen extends LevelScreen {
             shapeRenderer.circle(cx, cy, grenadeRadius);
         }
 
+        boolean isGKeyCurrentlyPressed = Gdx.input.isKeyPressed(Input.Keys.G);
+
+        // detect G key release to throw grenade
+        if (!isGKeyCurrentlyPressed && wasGKeyPressedLastFrame) {
+            float maxGrenadeDistance = 250f;
+            float grenadeAimAngle = MathUtils.atan2(dy, dx);
+            float clampedDistance = Math.min(distance, maxGrenadeDistance);
+            float targetX = player.getX() + clampedDistance * MathUtils.cos(grenadeAimAngle);
+            float targetY = player.getY() + clampedDistance * MathUtils.sin(grenadeAimAngle);
+
+            grenades.add(new Grenade(player.getX(), player.getY(), targetX, targetY, 2f)); // 2 seconds fuse time
+        }
+
+        wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;
 
         // draw crosshair lines
         float cx = mouseWorld.x;
@@ -186,7 +202,7 @@ public class MainGameplayScreen extends LevelScreen {
 
         
         ////////////////
-        // bullet and enemy code
+        // bullet, grenade and enemy code
         timeSinceLastShot += delta;
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown && 
             !Gdx.input.isKeyPressed(Input.Keys.G)) {
@@ -222,6 +238,17 @@ public class MainGameplayScreen extends LevelScreen {
 
             if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
                 bullets.removeIndex(i); // Remove bullet if it goes off-screen
+            }
+        }
+
+        // render grenades
+        shapeRenderer.setColor(Color.BLACK);
+        for (int i = grenades.size - 1; i >= 0; i--) {
+            Grenade g = grenades.get(i);
+            g.update(delta);
+            g.render(shapeRenderer);
+            if (g.isExpired()) {
+                grenades.removeIndex(i);
             }
         }
         shapeRenderer.end();
