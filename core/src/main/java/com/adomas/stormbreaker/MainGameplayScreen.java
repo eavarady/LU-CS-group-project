@@ -1,5 +1,6 @@
 package com.adomas.stormbreaker;
 
+import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.adomas.stormbreaker.tools.MapManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -8,7 +9,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -21,6 +28,7 @@ public class MainGameplayScreen extends LevelScreen {
     private Array<Grenade> grenades = new Array<>();
     private Array<Enemy> enemies = new Array<>();
     private MapManager mapManager;
+    private World world;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -47,6 +55,8 @@ public class MainGameplayScreen extends LevelScreen {
         viewport = new FitViewport(mapWidth, mapHeight, camera); // Set viewport size to match map
         viewport.apply();
 
+        world = new World(new Vector2(0, 0), true); // no gravity, allow sleeping
+
         // Create the player
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
@@ -59,12 +69,33 @@ public class MainGameplayScreen extends LevelScreen {
         // Center camera on the map
         camera.position.set(mapWidth / 2, mapHeight / 2, 0);
         camera.update();
+
+        // Create static Box2D bodies for map collision rectangles so grenades can bounce off them
+        for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+            BodyDef bodyDef = new BodyDef();
+            bodyDef.type = BodyDef.BodyType.StaticBody;
+            bodyDef.position.set((rect.getX() + rect.getWidth() / 2f) / Grenade.PPM, (rect.getY() + rect.getHeight() / 2f) / Grenade.PPM);
+
+            Body body = world.createBody(bodyDef);
+            
+            PolygonShape shape = new PolygonShape();
+            shape.setAsBox(rect.getWidth() / 2f / Grenade.PPM, rect.getHeight() / 2f / Grenade.PPM);
+
+            FixtureDef fixtureDef = new FixtureDef();
+            fixtureDef.shape = shape;
+            fixtureDef.density = 1f;
+            fixtureDef.restitution = 0.8f; // Adjust for bounce feel
+
+            body.createFixture(fixtureDef);
+            shape.dispose();
+        }
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        world.step(delta, 6, 2); // advance the physics simulation
 
         // update player
         player.update(delta, enemies, mapManager.getCollisionRectangles());
@@ -174,7 +205,8 @@ public class MainGameplayScreen extends LevelScreen {
             float targetX = player.getX() + clampedDistance * MathUtils.cos(grenadeAimAngle);
             float targetY = player.getY() + clampedDistance * MathUtils.sin(grenadeAimAngle);
 
-            grenades.add(new Grenade(player.getX(), player.getY(), targetX, targetY, 2f)); // 2 seconds fuse time
+            Grenade grenade = new Grenade(world, player.getX(), player.getY(), targetX, targetY, 2f); // 2 seconds fuse time
+            grenades.add(grenade);
         }
 
         wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;
@@ -246,8 +278,10 @@ public class MainGameplayScreen extends LevelScreen {
         for (int i = grenades.size - 1; i >= 0; i--) {
             Grenade g = grenades.get(i);
             g.update(delta);
-            g.render(shapeRenderer);
+            Vector2 pos = g.getBody().getPosition();
+            shapeRenderer.circle(pos.x * Grenade.PPM, pos.y * Grenade.PPM, g.getRadius());
             if (g.isExpired()) {
+                world.destroyBody(g.getBody());
                 grenades.removeIndex(i);
             }
         }
@@ -277,6 +311,9 @@ public class MainGameplayScreen extends LevelScreen {
 
     @Override
     public void dispose() {
+        if (world != null) {
+            world.dispose();
+        }
         super.dispose();
         mapManager.dispose();
         player.dispose();
