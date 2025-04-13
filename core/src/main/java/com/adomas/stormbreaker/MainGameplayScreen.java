@@ -84,7 +84,7 @@ public class MainGameplayScreen extends LevelScreen {
             FixtureDef fixtureDef = new FixtureDef();
             fixtureDef.shape = shape;
             fixtureDef.density = 1f;
-            fixtureDef.restitution = 0.8f; // Adjust for bounce feel
+            fixtureDef.restitution = 0.6f; // adjust for bounce feel
 
             body.createFixture(fixtureDef);
             shape.dispose();

@@ -38,7 +38,7 @@ public class Grenade {
         body.createFixture(fixtureDef);
         shape.dispose();
 
-        // Calculate velocity
+        // Cgit alculate velocity
         float dx = tx - x;
         float dy = ty - y;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
