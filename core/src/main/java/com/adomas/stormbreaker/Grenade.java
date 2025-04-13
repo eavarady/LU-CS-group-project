@@ -11,15 +11,16 @@ public class Grenade {
     private float radius = 4.5f;
     private float fuseTime;
     private float timeAlive = 0f;
-    private Vector2 target;
-    private boolean reachedTarget = false;
+    private float distanceTraveled = 0f;
+    private float maxTravelDistance;
+    private Vector2 lastPosition;
 
     public Grenade(World world, float x, float y, float tx, float ty, float fuseTime) {
         this.fuseTime = fuseTime;
+        this.maxTravelDistance = new Vector2(tx - x, ty - y).len() / PPM;
 
         // Define the body
         BodyDef bodyDef = new BodyDef();
-      
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(x / PPM, y / PPM);
         this.body = world.createBody(bodyDef);
@@ -32,7 +33,7 @@ public class Grenade {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
-        fixtureDef.restitution = 0.8f; // Make it bouncy
+        fixtureDef.restitution = 0.2f; // make it bouncy
 
         body.createFixture(fixtureDef);
         shape.dispose();
@@ -41,35 +42,34 @@ public class Grenade {
         float dx = tx - x;
         float dy = ty - y;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
-        float speed = 200f;
+        float speed = 350f;
         float vx = (dx / length) * speed / PPM;
         float vy = (dy / length) * speed / PPM;
         body.setLinearVelocity(new Vector2(vx, vy));
-        
-        this.target = new Vector2(tx, ty).scl(1 / PPM); // scale target appropriately without mutating during update
+
+        this.lastPosition = new Vector2(body.getPosition());
     }
 
     public void update(float delta) {
         timeAlive += delta;
 
-        if (!reachedTarget) {
-            Vector2 currentPos = body.getPosition();
-            if (currentPos.dst(target) <= radius / (2f * PPM)) {
-                body.setLinearVelocity(0, 0);
-                reachedTarget = true;
-            }
+        Vector2 currentPos = body.getPosition();
+        distanceTraveled += currentPos.dst(lastPosition);
+        lastPosition.set(currentPos);
+
+        if (distanceTraveled >= maxTravelDistance) {
+            body.setLinearVelocity(0, 0);
         }
 
         if (timeAlive >= fuseTime) {
-            body.setLinearVelocity(0, 0); // Redundant if already stopped, but safe
+            body.setLinearVelocity(0, 0); 
         }
     }
 
     public void render(ShapeRenderer sr) {
         Vector2 pos = body.getPosition();
         sr.circle(pos.x * PPM, pos.y * PPM, radius);
-         // DEBUG: print current velocity of the grenade
-        System.out.println("Grenade velocity (m/s): " + body.getLinearVelocity());
+
     }
 
     public boolean isExpired() {
