@@ -45,7 +45,7 @@ public class Bullet {
 
             // Check if the bullet's path intersects the enemy's hitbox
             if (intersectsLine(startX, startY, x, y, enemy)) {
-                enemy.takeDamage(25);
+                enemy.takeDamage(50);
                 stopped = true; // Stop the bullet after hitting an enemy
                 return;
             }

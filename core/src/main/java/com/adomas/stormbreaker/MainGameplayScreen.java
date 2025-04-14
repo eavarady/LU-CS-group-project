@@ -64,7 +64,7 @@ public class MainGameplayScreen extends LevelScreen {
         enemies.add(new Enemy(400, 300, 0, "enemy_blob.png"));
         enemies.add(new Enemy(600, 400, 0, "enemy_blob.png"));
         enemies.add(new Enemy(800, 200, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(1000, 500, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 500, 0, "enemy_blob.png"));
 
         // Center camera on the map
         camera.position.set(mapWidth / 2, mapHeight / 2, 0);
