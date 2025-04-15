@@ -304,7 +304,7 @@ public class MainGameplayScreen extends LevelScreen {
 
     @Override
     public void resize(int width, int height) {
-        System.out.println("Resizing to: " + width + "x" + height);
+        //System.out.println("Resizing to: " + width + "x" + height);
         viewport.update(width, height);
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
     }

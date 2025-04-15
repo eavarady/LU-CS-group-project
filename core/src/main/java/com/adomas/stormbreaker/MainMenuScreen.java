@@ -41,16 +41,16 @@ public class MainMenuScreen implements Screen {
         // Re-add the style if necessary (most cases this is not needed, but it's safe to do so)
         skin.add("default", textButtonStyle);
         
-        System.out.println("Font line height: " + font.getLineHeight());
+        //System.out.println("Font line height: " + font.getLineHeight());
         
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
 
-        for (Object key : skin.getAll(BitmapFont.class).keys()) {
-            System.out.println("Font: " + key);
-        }
-        System.out.println("Available TextButton styles: " + skin.getAll(TextButton.TextButtonStyle.class).keys());
+        // for (Object key : skin.getAll(BitmapFont.class).keys()) {
+        //     System.out.println("Font: " + key);
+        // }
+        //System.out.println("Available TextButton styles: " + skin.getAll(TextButton.TextButtonStyle.class).keys());
 
         TextButton playButton = new TextButton("Play", skin, "default");
         TextButton quitButton = new TextButton("Quit", skin, "default");
