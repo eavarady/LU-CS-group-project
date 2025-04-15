@@ -286,6 +286,19 @@ public class MainGameplayScreen extends LevelScreen {
             }
         }
         shapeRenderer.end();
+
+        // RENDER COLLISION RECTANGLES FOR DEBUGGING
+        // Draw map collision rectangles
+        // shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        // shapeRenderer.setColor(Color.RED);
+        // for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+        //     shapeRenderer.rect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        // }
+        // Draw player collision rectangle
+        // shapeRenderer.setColor(Color.GREEN);
+        // CollisionRectangle playerRect = player.getCollisionRectangle();
+        // shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
+        // shapeRenderer.end();
         //////////////
 
 

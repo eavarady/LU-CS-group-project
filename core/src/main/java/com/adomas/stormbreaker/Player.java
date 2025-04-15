@@ -23,7 +23,7 @@ public class Player extends Character implements Disposable {
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
-        this.collisionRectangle = new CollisionRectangle(x, y, texture.getWidth(), texture.getHeight());
+        this.collisionRectangle = new CollisionRectangle(x, y, texture.getWidth() / 2, texture.getHeight() / 2);
         this.playerRadius = texture.getWidth() / 2f;
 
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
@@ -37,14 +37,14 @@ public class Player extends Character implements Disposable {
         // Check horizontal movement
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             proposedX = x - moveAmount;
-            collisionRectangle.move(proposedX, y);
+            collisionRectangle.move(proposedX - texture.getWidth() / 4f, y - texture.getHeight() / 4f);
             if (!isCollidingWithMap(collisionRectangle, mapCollisions) && !isCollidingWithEnemies(proposedX, y, enemies)) {
                 x = proposedX;
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             proposedX = x + moveAmount;
-            collisionRectangle.move(proposedX, y);
+            collisionRectangle.move(proposedX - texture.getWidth() / 4f, y - texture.getHeight() / 4f);
             if (!isCollidingWithMap(collisionRectangle, mapCollisions) && !isCollidingWithEnemies(proposedX, y, enemies)) {
                 x = proposedX;
             }
@@ -53,14 +53,14 @@ public class Player extends Character implements Disposable {
         // Check vertical movement
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             proposedY = y + moveAmount;
-            collisionRectangle.move(x, proposedY);
+            collisionRectangle.move(x - texture.getWidth() / 4f, proposedY - texture.getHeight() / 4f);
             if (!isCollidingWithMap(collisionRectangle, mapCollisions) && !isCollidingWithEnemies(x, proposedY, enemies)) {
                 y = proposedY;
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             proposedY = y - moveAmount;
-            collisionRectangle.move(x, proposedY);
+            collisionRectangle.move(x - texture.getWidth() / 4f, proposedY - texture.getHeight() / 4f);
             if (!isCollidingWithMap(collisionRectangle, mapCollisions) && !isCollidingWithEnemies(x, proposedY, enemies)) {
                 y = proposedY;
             }
@@ -78,7 +78,10 @@ public class Player extends Character implements Disposable {
         }
 
         // Update collision rectangle position
-        collisionRectangle.move(x, y);
+        collisionRectangle.move(
+            x - (texture.getWidth() / 4f),
+            y - (texture.getHeight() / 4f)
+        );
 
         boolean anyKeyPressed = Gdx.input.isKeyPressed(Input.Keys.W) ||
                                 Gdx.input.isKeyPressed(Input.Keys.A) ||
