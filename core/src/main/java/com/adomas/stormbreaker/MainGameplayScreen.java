@@ -33,7 +33,7 @@ public class MainGameplayScreen extends LevelScreen {
     private OrthographicCamera camera;
     private Viewport viewport;
 
-    private float shootCooldown = 0.18f; // seconds between shots to prevent spammming
+    private float shotCooldown = 0.15f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
     private boolean wasGKeyPressedLastFrame = false;
 
@@ -236,7 +236,7 @@ public class MainGameplayScreen extends LevelScreen {
         ////////////////
         // bullet, grenade and enemy code
         timeSinceLastShot += delta;
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shootCooldown && 
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shotCooldown && 
             !Gdx.input.isKeyPressed(Input.Keys.G)) {
         // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
             float bulletX = player.getX();
@@ -330,5 +330,9 @@ public class MainGameplayScreen extends LevelScreen {
         super.dispose();
         mapManager.dispose();
         player.dispose();
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }
