@@ -140,6 +140,9 @@ public class MainGameplayScreen extends LevelScreen {
         }
         spriteBatch.end();
 
+        // Aim cone
+        float spreadAngle = 3f;
+
         // draw dynamic crosshair based on distance from player to mouse
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.WHITE);
@@ -171,8 +174,7 @@ public class MainGameplayScreen extends LevelScreen {
         float spacing = Math.max(5f, expansionFactor * (float) Math.sqrt(distance));
         
         // Adjust the circle radius to match the inner tips of the crosshair
-        float innerCircleRadius = spacing / 2f; // Inner circle touches the inner tips
-
+        float innerCircleRadius = (float) Math.tan(MathUtils.degreesToRadians * spreadAngle) * distance; // Inner circle touches the inner tips
 
         // when G key is held down, enter grenade aim mode
         if (Gdx.input.isKeyPressed(Input.Keys.G)) {
@@ -236,10 +238,38 @@ public class MainGameplayScreen extends LevelScreen {
 
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
+        
         // Draw the invisible circle for debugging
-        //shapeRenderer.setColor(Color.RED);
-        //shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
-    
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
+
+        // Calculate the angle from player to mouse
+        float baseAngle = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
+
+        // Calculate the left and right edge angles of the cone
+        float leftEdgeAngle = baseAngle - spreadAngle;
+        float rightEdgeAngle = baseAngle + spreadAngle;
+
+        // Calculate the end points of the cone edges (use a long enough distance, e.g., 1000 units)
+        float coneLength = 1000f;
+        float leftX = player.getX() + coneLength * MathUtils.cosDeg(leftEdgeAngle);
+        float leftY = player.getY() + coneLength * MathUtils.sinDeg(leftEdgeAngle);
+        float rightX = player.getX() + coneLength * MathUtils.cosDeg(rightEdgeAngle);
+        float rightY = player.getY() + coneLength * MathUtils.sinDeg(rightEdgeAngle);
+
+        // Draw the cone edges
+        shapeRenderer.setColor(Color.YELLOW);
+        shapeRenderer.line(player.getX(), player.getY(), leftX, leftY);
+        shapeRenderer.line(player.getX(), player.getY(), rightX, rightY);
+
+        // Optionally, draw the arc for the cone at the crosshair circle
+        shapeRenderer.arc(
+            player.getX(), player.getY(),
+            distance, // radius to mouse
+            baseAngle - spreadAngle,
+            2 * spreadAngle
+        );
+
         shapeRenderer.end();
 
         
@@ -259,8 +289,6 @@ public class MainGameplayScreen extends LevelScreen {
             //float angle = MathUtils.random(-spreadAngle, spreadAngle);
             // Calculate the spread angle based on the inner circle radius
             float spreadRadius = innerCircleRadius; // Use the inner circle radius
-            float spreadAngle = MathUtils.atan2(spreadRadius, distance) * MathUtils.radiansToDegrees;
-            //
             float angle = MathUtils.random(-spreadAngle, spreadAngle);
             float radians = angle * MathUtils.degreesToRadians;
             float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
