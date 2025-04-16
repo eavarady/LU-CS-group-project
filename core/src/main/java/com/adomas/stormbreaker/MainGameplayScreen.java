@@ -222,15 +222,48 @@ public class MainGameplayScreen extends LevelScreen {
         }
 
         wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;
-
-        // draw crosshair lines
+        
+        // CROSSHAR AIMING AND ENEMY DETECTION
+        // Crosshair center position
         float cx = mouseWorld.x;
         float cy = mouseWorld.y;
-        // OLD CROSSHAIR CODE
-        // shapeRenderer.line(cx - spacing, cy, cx - spacing / 2, cy); // left
-        // shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
-        // shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
-        // shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
+        // Check if any enemy is within the inner circle (at the crosshair) and visible (no obstacle in the way)
+        // Primitive raycasting
+        boolean enemyInCrosshairAndVisible = false;
+        for (Enemy e : enemies) {
+            float ex = e.getX();
+            float ey = e.getY();
+            float distToEnemy = Vector2.dst(cx, cy, ex, ey); // Use crosshair center!
+            if (distToEnemy <= innerCircleRadius) {
+                // Line-of-sight check: step along the line from player to enemy
+                boolean blocked = false;
+                float playerX = player.getX();
+                float playerY = player.getY();
+                float dxToEnemy = ex - playerX;
+                float dyToEnemy = ey - playerY;
+                float distanceToEnemy = Vector2.dst(playerX, playerY, ex, ey);
+                int steps = (int)(distanceToEnemy / 10f);
+                for (int i = 1; i <= steps; i++) {
+                    float t = i / (float) steps;
+                    float checkX = playerX + dxToEnemy * t;
+                    float checkY = playerY + dyToEnemy * t;
+                    for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+                        if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                            rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) break;
+                }
+                if (!blocked) {
+                    enemyInCrosshairAndVisible = true;
+                    break;
+                }
+            }
+        }
+        // Draw crosshair lines
+        shapeRenderer.setColor(enemyInCrosshairAndVisible ? Color.RED : Color.WHITE);
         shapeRenderer.line(cx - spacing, cy, cx - innerCircleRadius, cy); // left
         shapeRenderer.line(cx + innerCircleRadius, cy, cx + spacing, cy); // right
         shapeRenderer.line(cx, cy - spacing, cx, cy - innerCircleRadius); // down
@@ -238,7 +271,7 @@ public class MainGameplayScreen extends LevelScreen {
 
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
-        
+
         // Draw the invisible circle for debugging
         shapeRenderer.setColor(Color.RED);
         shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
