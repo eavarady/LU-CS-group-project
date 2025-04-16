@@ -15,6 +15,9 @@ public class Player extends Character implements Disposable {
     private CollisionRectangle collisionRectangle;
     private float playerRadius;
 
+    private float health = 100f;
+    private String currentWeapon = "Pistol";
+
     private Sound stepSound;
     private long stepSoundId = -1; // ID for the currently looping sound
     private boolean isWalking = false;
@@ -154,6 +157,14 @@ public class Player extends Character implements Disposable {
         return false;
     }
 
+    public float getHealth() {
+        return health;
+    }
+    
+    public String getCurrentWeapon() {
+        return currentWeapon;
+    }
+    
     public float getRadius() {
         return playerRadius;
     }
