@@ -222,7 +222,7 @@ public class MainGameplayScreen extends LevelScreen {
         }
 
         wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;
-        
+
         // CROSSHAR AIMING AND ENEMY DETECTION
         // Crosshair center position
         float cx = mouseWorld.x;
@@ -273,8 +273,8 @@ public class MainGameplayScreen extends LevelScreen {
         Gdx.input.setCursorCatched(true);
 
         // Draw the invisible circle for debugging
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
+        // shapeRenderer.setColor(Color.RED);
+        // shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
 
         // Calculate the angle from player to mouse
         float baseAngle = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
@@ -291,17 +291,9 @@ public class MainGameplayScreen extends LevelScreen {
         float rightY = player.getY() + coneLength * MathUtils.sinDeg(rightEdgeAngle);
 
         // Draw the cone edges
-        shapeRenderer.setColor(Color.YELLOW);
-        shapeRenderer.line(player.getX(), player.getY(), leftX, leftY);
-        shapeRenderer.line(player.getX(), player.getY(), rightX, rightY);
-
-        // Optionally, draw the arc for the cone at the crosshair circle
-        shapeRenderer.arc(
-            player.getX(), player.getY(),
-            distance, // radius to mouse
-            baseAngle - spreadAngle,
-            2 * spreadAngle
-        );
+        // shapeRenderer.setColor(Color.YELLOW);
+        // shapeRenderer.line(player.getX(), player.getY(), leftX, leftY);
+        // shapeRenderer.line(player.getX(), player.getY(), rightX, rightY);
 
         shapeRenderer.end();
 
