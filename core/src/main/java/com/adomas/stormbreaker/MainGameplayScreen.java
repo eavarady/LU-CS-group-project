@@ -305,16 +305,36 @@ public class MainGameplayScreen extends LevelScreen {
 
         // RENDER COLLISION RECTANGLES FOR DEBUGGING
         // Draw map collision rectangles
-        // shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        // shapeRenderer.setColor(Color.RED);
-        // for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
-        //     shapeRenderer.rect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-        // }
-        // Draw player collision rectangle
-        // shapeRenderer.setColor(Color.GREEN);
-        // CollisionRectangle playerRect = player.getCollisionRectangle();
-        // shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
-        // shapeRenderer.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.RED);
+        for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+            shapeRenderer.rect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        }
+        //Draw player collision rectangle
+        shapeRenderer.setColor(Color.GREEN);
+        CollisionRectangle playerRect = player.getCollisionRectangle();
+        shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
+        shapeRenderer.end();
+        // Draw enemy collision rectangles
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.BLUE);
+        for (Enemy e : enemies) {
+            CollisionRectangle enemyRect = e.getCollisionRectangle();
+            shapeRenderer.rect(enemyRect.getX(), enemyRect.getY(), enemyRect.getWidth(), enemyRect.getHeight());
+        }
+        shapeRenderer.end();
+        // Draw enemy vision cones
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.YELLOW);
+        for (Enemy e : enemies) {
+            float visionDistance = e.getVisionDistance();
+            float visionAngle = e.getVisionAngle();
+            float angle = e.getRotation() * MathUtils.degreesToRadians;
+            float x = e.getX();
+            float y = e.getY();
+            shapeRenderer.arc(x, y, visionDistance, -visionAngle / 2f + angle * MathUtils.radiansToDegrees, visionAngle);
+        }
+        shapeRenderer.end();
         //////////////
 
 

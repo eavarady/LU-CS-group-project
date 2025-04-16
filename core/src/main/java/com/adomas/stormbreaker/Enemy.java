@@ -11,7 +11,7 @@ public class Enemy extends NPC {
     private final float enemyRadius;
     // the radius of the enemy for player detection, 200 degrees in front of the enemy
     // this is used to check if the player is in the enemy's field of view
-    private final float visionAngle = 200f;
+    private final float visionAngle = 100f;
     // Shot cooldown time
     private final float shotCooldown = 0.15f;
     // Time since last shot
@@ -19,7 +19,7 @@ public class Enemy extends NPC {
     // Collision rectangle for the enemy
     private final CollisionRectangle collisionRectangle;
     // Vision distance for the enemy
-    private final float visionDistance = 500f;
+    private final float visionDistance = 600f;
     // Bool to check if the enemy wants to shoot
     private boolean wantsToShoot = false;
     // When the enemy wants to shoot
@@ -155,10 +155,29 @@ public class Enemy extends NPC {
     public void setShootDirX(float shootDirX) {
         this.shootDirX = shootDirX;
     }
+
     public void setShootDirY(float shootDirY) {
         this.shootDirY = shootDirY;
     }
+
     public void setWantsToShoot(boolean wantsToShoot) {
         this.wantsToShoot = wantsToShoot;
+    }
+
+    public CollisionRectangle getCollisionRectangle() {
+        return collisionRectangle;
+    }
+
+    public float getVisionDistance() {
+        return visionDistance;
+    }
+
+    public float getVisionAngle() {
+        return visionAngle;
+    }
+
+    // Get rotation of the enemy
+    public float getRotation() {
+        return rotation;
     }
 }
