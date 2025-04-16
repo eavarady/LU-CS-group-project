@@ -13,12 +13,14 @@ public class Bullet {
     float speed = 5000f;
     float radius = 2.0f;
     private boolean stopped = false; // Flag to indicate if the bullet has stopped
+    private Character owner; // or use a specific type if you want
 
-    public Bullet(float x, float y, float vx, float vy) {
+    public Bullet(float x, float y, float vx, float vy, Character owner) {
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        this.owner = owner;
     }
 
     public float getX() {
@@ -27,6 +29,10 @@ public class Bullet {
 
     public float getY() {
         return y;
+    }
+
+    public Character getOwner() {
+        return owner;
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> obstacles) {
@@ -47,7 +53,9 @@ public class Bullet {
 
             // Check for collisions with enemies along the path
             for (Enemy enemy : enemies) {
+                // Skip if the enemy is dead or if the bullet belongs to the enemy
                 if (enemy.isDead()) continue;
+                if (this.getOwner() == enemy) continue;
 
                 if (intersectsLine(startX, startY, endX, endY, enemy)) {
                     enemy.takeDamage(50);

@@ -8,7 +8,7 @@ public class Enemy extends NPC {
 
     private int health = 100;
     private boolean dead = false;
-    private float enemyRadius;
+    private final float enemyRadius;
     // the radius of the enemy for player detection, 200 degrees in front of the enemy
     // this is used to check if the player is in the enemy's field of view
     private final float visionAngle = 200f;

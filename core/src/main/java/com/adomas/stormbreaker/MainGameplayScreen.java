@@ -33,7 +33,7 @@ public class MainGameplayScreen extends LevelScreen {
     private OrthographicCamera camera;
     private Viewport viewport;
 
-    private float shotCooldown = 0.15f; // seconds between shots to prevent spammming
+    private final float shotCooldown = 0.15f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
     private boolean wasGKeyPressedLastFrame = false;
 
@@ -256,7 +256,7 @@ public class MainGameplayScreen extends LevelScreen {
             float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
             float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
 
-            bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY));
+            bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, player));
             timeSinceLastShot = 0f; // reset cooldown
         }
 
@@ -270,7 +270,7 @@ public class MainGameplayScreen extends LevelScreen {
                 float dirX = e.getShootDirX();
                 float dirY = e.getShootDirY();
 
-                bullets.add(new Bullet(bulletX, bulletY, dirX, dirY));
+                bullets.add(new Bullet(bulletX, bulletY, dirX, dirY, e));
                 e.setWantsToShoot(false); // Reset shooting intent
                 // Sound or muzzle flash here?
             }
