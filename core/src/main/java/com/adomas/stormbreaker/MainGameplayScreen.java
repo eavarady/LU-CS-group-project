@@ -260,6 +260,22 @@ public class MainGameplayScreen extends LevelScreen {
             timeSinceLastShot = 0f; // reset cooldown
         }
 
+        // Update and handle enemy shooting
+        for (Enemy e : enemies) {
+            e.update(delta, player, mapManager.getCollisionRectangles());
+
+            if (e.wantsToShoot()) {
+                float bulletX = e.getX();
+                float bulletY = e.getY();
+                float dirX = e.getShootDirX();
+                float dirY = e.getShootDirY();
+
+                bullets.add(new Bullet(bulletX, bulletY, dirX, dirY));
+                e.setWantsToShoot(false); // Reset shooting intent
+                // Sound or muzzle flash here?
+            }
+        }
+
         // bullet is a white dot for now
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.WHITE);

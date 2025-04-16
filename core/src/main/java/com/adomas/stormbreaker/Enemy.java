@@ -20,6 +20,11 @@ public class Enemy extends NPC {
     private final CollisionRectangle collisionRectangle;
     // Vision distance for the enemy
     private final float visionDistance = 500f;
+    // Bool to check if the enemy wants to shoot
+    private boolean wantsToShoot = false;
+    // When the enemy wants to shoot
+    private float shootDirX = 0f;
+    private float shootDirY = 0f;
 
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
@@ -81,6 +86,19 @@ public class Enemy extends NPC {
         if (blocked) return; // Player is not visible
 
         // At this point player is visible
+        
+        timeSinceLastShot += delta;
+        if (timeSinceLastShot >= shotCooldown) {
+            // Set intent to shoot and direction
+            wantsToShoot = true;
+            float norm = (float)Math.sqrt(dx * dx + dy * dy);
+            shootDirX = dx / norm;
+            shootDirY = dy / norm;
+            timeSinceLastShot = 0f;
+        } else {
+            wantsToShoot = false;
+        }
+
 
         //TO DO:
         // Spawn bullet/s towards player in MainGameplayScreen
@@ -119,5 +137,28 @@ public class Enemy extends NPC {
     
     public float getRadius() {
         return enemyRadius;
+    }
+
+    public boolean wantsToShoot() {
+        return wantsToShoot;
+    }
+    
+    public float getShootDirX() {
+        return shootDirX;
+    }
+    
+    public float getShootDirY() {
+        return shootDirY;
+    }
+
+    //reset shooting direction
+    public void setShootDirX(float shootDirX) {
+        this.shootDirX = shootDirX;
+    }
+    public void setShootDirY(float shootDirY) {
+        this.shootDirY = shootDirY;
+    }
+    public void setWantsToShoot(boolean wantsToShoot) {
+        this.wantsToShoot = wantsToShoot;
     }
 }
