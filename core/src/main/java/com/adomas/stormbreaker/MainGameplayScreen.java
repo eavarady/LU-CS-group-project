@@ -7,6 +7,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -36,6 +38,10 @@ public class MainGameplayScreen extends LevelScreen {
     private final float shotCooldown = 0.15f; // seconds between shots to prevent spammming
     private float timeSinceLastShot = 0f;
     private boolean wasGKeyPressedLastFrame = false;
+
+    private HUD hud;
+    private BitmapFont hudFont;
+    private SpriteBatch hudBatch;
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -69,6 +75,10 @@ public class MainGameplayScreen extends LevelScreen {
         // Center camera on the map
         camera.position.set(mapWidth / 2, mapHeight / 2, 0);
         camera.update();
+
+        hudFont = new BitmapFont();
+        hudBatch = new SpriteBatch();
+        hud = new HUD(hudFont);
 
         // Create static Box2D bodies for map collision rectangles so grenades can bounce off them
         for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
@@ -323,6 +333,8 @@ public class MainGameplayScreen extends LevelScreen {
         shapeRenderer.setColor(Color.WHITE);
         shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         shapeRenderer.end();
+
+        hud.render(hudBatch, player);
 
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
