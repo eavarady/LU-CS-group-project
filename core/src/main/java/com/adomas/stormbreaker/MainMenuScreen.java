@@ -2,12 +2,21 @@ package com.adomas.stormbreaker;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MainMenuScreen implements Screen {
@@ -15,6 +24,9 @@ public class MainMenuScreen implements Screen {
     private final StormbreakerGame game;
     private Stage stage;
     private Skin skin;
+    private Texture backgroundTexture;
+    private Texture playTexture;
+    private Texture exitTexture;
 
     public MainMenuScreen(StormbreakerGame game) {
         this.game = game;
@@ -25,57 +37,66 @@ public class MainMenuScreen implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        skin = new Skin(Gdx.files.internal("uiskin.json")); 
-        BitmapFont font = new BitmapFont(
-            Gdx.files.internal("default.fnt"), 
-            Gdx.files.internal("default.png"), 
-            false
-        );
-        if (skin.has("default-font", BitmapFont.class)) {
-            skin.remove("default-font", BitmapFont.class);
-        }
-        skin.add("default-font", font);
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        TextButton.TextButtonStyle textButtonStyle = skin.get("default", TextButton.TextButtonStyle.class);
-        textButtonStyle.font = font;
-        // Re-add the style if necessary (most cases this is not needed, but it's safe to do so)
-        skin.add("default", textButtonStyle);
-        
-        //System.out.println("Font line height: " + font.getLineHeight());
+        backgroundTexture = new Texture(Gdx.files.internal("Main.png"));
+        playTexture = new Texture(Gdx.files.internal("playcrop.png"));
+        exitTexture = new Texture(Gdx.files.internal("exitcrop.png"));
+
+        Image background = new Image(new TextureRegionDrawable(backgroundTexture));
+        background.setFillParent(true);
+        stage.addActor(background);
+
+        ImageButton playButton = createHoverButton(playTexture);
+        ImageButton quitButton = createHoverButton(exitTexture);
+
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainGameplayScreen(game));
+                dispose();
+            }
+        });
+
+        quitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit(); 
+            }
+        });
+
         
         Table table = new Table();
         table.setFillParent(true);
+        table.center();
+
+        float screenHeight = Gdx.graphics.getHeight();
+        float buttonHeight = screenHeight * 0.18f;
+        float spacing = screenHeight * 0.03f;
+
+        float playAspect = (float) playTexture.getWidth() / playTexture.getHeight();
+        float exitAspect = (float) exitTexture.getWidth() / exitTexture.getHeight();
+
+        float playWidth = buttonHeight * playAspect;
+        float exitWidth = buttonHeight * exitAspect;
+
+        table.add(playButton).width(playWidth).height(buttonHeight).padBottom(spacing).row();
+        table.add(quitButton).width(exitWidth).height(buttonHeight);
+
+        table.setTouchable(Touchable.childrenOnly); // Restrict inputs to the buttons only
         stage.addActor(table);
+    }
+// Method to create the tint effect
+    private ImageButton createHoverButton(Texture texture) {
+        TextureRegionDrawable up = new TextureRegionDrawable(new TextureRegion(texture));
+        Drawable hover = new TextureRegionDrawable(new TextureRegion(texture))
+                .tint(new Color(1f, 1f, 1f, 0.5f)); // Hover tint
 
-        // for (Object key : skin.getAll(BitmapFont.class).keys()) {
-        //     System.out.println("Font: " + key);
-        // }
-        //System.out.println("Available TextButton styles: " + skin.getAll(TextButton.TextButtonStyle.class).keys());
+        ImageButtonStyle style = new ImageButtonStyle();
+        style.imageUp = up;
+        style.imageOver = hover;
 
-        TextButton playButton = new TextButton("Play", skin, "default");
-        TextButton quitButton = new TextButton("Quit", skin, "default");
-
-        playButton.addListener(e -> {
-            if (playButton.isPressed()) {
-                game.setScreen(new MainGameplayScreen(game)); 
-                // game.setScreen(new GameplayScreen(game));
-                // Gdx.app.exit(); // temporary: exits the game instead of starting gameplay
-                return true;
-            }
-            return false;
-        });
-
-        quitButton.addListener(e -> {
-            if (quitButton.isPressed()) {
-                Gdx.app.exit();
-                return true;
-            }
-            return false;
-        });
-
-        table.add(playButton).pad(10).row();
-        table.add(quitButton).pad(10);
-        table.setDebug(true);
+        return new ImageButton(style);
     }
 
     @Override
@@ -104,5 +125,8 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
         stage.dispose();
         skin.dispose();
+        backgroundTexture.dispose();
+        playTexture.dispose();
+        exitTexture.dispose();
     }
 }
