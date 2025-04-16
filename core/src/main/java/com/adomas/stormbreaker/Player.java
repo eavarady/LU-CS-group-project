@@ -16,7 +16,7 @@ public class Player extends Character implements Disposable {
     private float playerRadius;
 
     private float health = 100f;
-    private String currentWeapon = "Pistol";
+    private String currentWeapon = "AK-74";
 
     private Sound stepSound;
     private long stepSoundId = -1; // ID for the currently looping sound
