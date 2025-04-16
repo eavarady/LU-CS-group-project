@@ -23,7 +23,7 @@ public class Player extends Character implements Disposable {
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
-        this.collisionRectangle = new CollisionRectangle(x, y, texture.getWidth() / 2, texture.getHeight() / 2);
+        this.collisionRectangle = new CollisionRectangle(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f), texture.getWidth() / 2, texture.getHeight() / 2);
         this.playerRadius = texture.getWidth() / 2f;
 
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
@@ -31,8 +31,8 @@ public class Player extends Character implements Disposable {
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
         float moveAmount = speed * delta;
-        float proposedX = x;
-        float proposedY = y;
+        float proposedX;
+        float proposedY;
 
         // Check horizontal movement
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
@@ -143,13 +143,11 @@ public class Player extends Character implements Disposable {
     }
 
     private boolean isCollidingWithEnemies(float proposedX, float proposedY, Array<Enemy> enemies) {
+
         for (Enemy e : enemies) {
             if (e.isDead()) continue; // Skip dead enemies
-            float dx = proposedX - e.getX();
-            float dy = proposedY - e.getY();
-            float distanceSq = dx * dx + dy * dy;
-            float minDist = playerRadius + e.getTexture().getWidth() / 2f;
-            if (distanceSq < minDist * minDist) {
+            CollisionRectangle enemyRect = e.getCollisionRectangle();
+            if (collisionRectangle.collisionCheck(enemyRect)) {
                 return true;
             }
         }

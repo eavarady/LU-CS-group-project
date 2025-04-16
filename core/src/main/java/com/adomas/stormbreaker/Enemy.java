@@ -29,7 +29,7 @@ public class Enemy extends NPC {
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
         this.enemyRadius = texture.getWidth() / 2f;
-        this.collisionRectangle = new CollisionRectangle(x, y, texture.getWidth() / 2, texture.getHeight() / 2);
+        this.collisionRectangle = new CollisionRectangle(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f), texture.getWidth() / 2, texture.getHeight() / 2);
     }
 
     public float getX() {
@@ -47,7 +47,11 @@ public class Enemy extends NPC {
     // Pass reference to the player and map collisions to the update method
     public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions) {
         if (dead) return;
-
+        // Update the collision rectangle position
+        collisionRectangle.move(
+            x - (texture.getWidth() / 4f),
+            y - (texture.getHeight() / 4f)
+        );
         // Calculate vector to player
         float dx = player.getX() - this.x;
         float dy = player.getY() - this.y;
@@ -98,22 +102,6 @@ public class Enemy extends NPC {
         } else {
             wantsToShoot = false;
         }
-
-
-        //TO DO:
-        // Spawn bullet/s towards player in MainGameplayScreen
-
-        // Move the enemy towards the player if enemy is aggressive type
-
-        // Maybe defensive type that moves away from player/camps
-        // Chance of defensive type rushing towards player if player is too close
-        // or if loses sight of player
-
-        //Patrolling behavior for agressive type
-
-        // Sound detection for enemy, they turn towards the sound
-        // and move towards it if they are aggressive type
-
     }
 
     public void render(SpriteBatch batch) {
