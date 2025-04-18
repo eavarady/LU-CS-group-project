@@ -26,7 +26,7 @@ public class Enemy extends NPC {
     private float shootDirX = 0f;
     private float shootDirY = 0f;
     // Rotation speed in degrees per second
-    private final float rotationSpeed = 90f;
+    private final float rotationSpeed = 120f;
     // Target rotation
     private float targetRotation = 0f;
 

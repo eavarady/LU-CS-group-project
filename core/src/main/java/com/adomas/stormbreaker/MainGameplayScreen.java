@@ -360,6 +360,10 @@ public class MainGameplayScreen extends LevelScreen {
             Vector2 pos = g.getBody().getPosition();
             shapeRenderer.circle(pos.x * Grenade.PPM, pos.y * Grenade.PPM, g.getRadius());
             if (g.isExpired()) {
+                // Create the explosion at the grenade's current position
+                createGrenadeExplosion(pos.x * Grenade.PPM, pos.y * Grenade.PPM);
+                
+                // Clean up the grenade
                 world.destroyBody(g.getBody());
                 grenades.removeIndex(i);
             }
@@ -435,5 +439,23 @@ public class MainGameplayScreen extends LevelScreen {
 
     public Player getPlayer() {
         return player;
+    }
+
+    // creates a grenade explosion with bullets spreading in a snowflake pattern (32 directions)
+    private void createGrenadeExplosion(float x, float y) {
+        int bulletCount = 32;
+        
+        // create bullets in a circle (every 11.25 degreees)
+        for (int i = 0; i < bulletCount; i++) {
+            // calculate angle for each bullet in rads
+            float angle = (float) (i * (2 * Math.PI / bulletCount));
+            
+            // calculate direction vector for each angle
+            float dirX = (float) Math.cos(angle);
+            float dirY = (float) Math.sin(angle);
+            
+            // create the bullet and add it to the bullets array
+            bullets.add(new Bullet(x, y, dirX, dirY, null)); // null owner means explosion bullet
+        }
     }
 }
