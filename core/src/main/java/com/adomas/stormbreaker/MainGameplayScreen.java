@@ -2,6 +2,9 @@ package com.adomas.stormbreaker;
 
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.adomas.stormbreaker.tools.MapManager;
+import com.adomas.stormbreaker.weapons.Carbine;
+import com.adomas.stormbreaker.weapons.Shotgun;
+import com.adomas.stormbreaker.weapons.Weapon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -42,6 +45,14 @@ public class MainGameplayScreen extends LevelScreen {
     private HUD hud;
     private BitmapFont hudFont;
     private SpriteBatch hudBatch;
+
+    // Add these fields for tracking reticle expansion state
+    private float currentSpreadMultiplier = 1.0f; // Current spread multiplier (1.0 = default, increases when firing)
+    private float maxSpreadMultiplier = 2.0f;     // Maximum spread multiplier when firing continuously
+    private boolean shotFiredThisFrame = false;   // Flag to track if a shot was successfully fired this frame
+
+    // Add these constants for reticle drawing
+    private final float RETICLE_HAIR_LENGTH = 11.0f; // Fixed length of reticle hairs
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -169,12 +180,21 @@ public class MainGameplayScreen extends LevelScreen {
         float dy = mouseWorld.y - player.getY();
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-        // map distance to crosshair spacing (clamp between 10 and beyond)
-        float expansionFactor = 1.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
-        float spacing = Math.max(5f, expansionFactor * (float) Math.sqrt(distance));
+        // Reset the shot fired flag at the beginning of the frame
+        shotFiredThisFrame = false;
+
+        // Get weapon-specific spread and expansion values
+        Weapon currentWeapon = player.getCurrentWeapon();
+        float baseSpreadAngle = currentWeapon != null ? currentWeapon.getSpreadAngle() : 3.0f; // Default fallback
+        float expansionFactor = currentWeapon != null ? currentWeapon.getReticleExpansionRate() : 1.5f; // Default fallback
+        float contractionRate = currentWeapon != null ? currentWeapon.getReticleContractionRate() : 0.5f; // Default fallback
         
-        // Adjust the circle radius to match the inner tips of the crosshair
-        float innerCircleRadius = (float) Math.tan(MathUtils.degreesToRadians * spreadAngle) * distance; // Inner circle touches the inner tips
+        // We'll update the spread multiplier after weapon firing
+        // For now, just calculate the initial spreadAngle
+        spreadAngle = baseSpreadAngle * currentSpreadMultiplier;
+
+        // Calculate inner circle radius based on spread angle and distance
+        float innerCircleRadius = (float) Math.tan(MathUtils.degreesToRadians * spreadAngle) * distance;
 
         // when G key is held down, enter grenade aim mode
         if (Gdx.input.isKeyPressed(Input.Keys.G)) {
@@ -262,12 +282,20 @@ public class MainGameplayScreen extends LevelScreen {
                 }
             }
         }
-        // Draw crosshair lines
+        // Draw crosshair with fixed-length hairs
         shapeRenderer.setColor(enemyInCrosshairAndVisible ? Color.RED : Color.WHITE);
-        shapeRenderer.line(cx - spacing, cy, cx - innerCircleRadius, cy); // left
-        shapeRenderer.line(cx + innerCircleRadius, cy, cx + spacing, cy); // right
-        shapeRenderer.line(cx, cy - spacing, cx, cy - innerCircleRadius); // down
-        shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + spacing); // up
+        
+        // Left hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx - innerCircleRadius - RETICLE_HAIR_LENGTH, cy, cx - innerCircleRadius, cy);
+        
+        // Right hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx + innerCircleRadius, cy, cx + innerCircleRadius + RETICLE_HAIR_LENGTH, cy);
+        
+        // Bottom hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx, cy - innerCircleRadius - RETICLE_HAIR_LENGTH, cx, cy - innerCircleRadius);
+        
+        // Top hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + innerCircleRadius + RETICLE_HAIR_LENGTH);
 
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
@@ -300,28 +328,57 @@ public class MainGameplayScreen extends LevelScreen {
         
         ////////////////
         // bullet, grenade and enemy code
-        timeSinceLastShot += delta;
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shotCooldown && 
-            !Gdx.input.isKeyPressed(Input.Keys.G)) {
-        // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
+        // Handle normal single-shot weapons with just pressed
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
             float bulletX = player.getX();
             float bulletY = player.getY();
             float dirX = dx / distance;
             float dirY = dy / distance;
-
-            // apply random spread angle
-            //float spreadAngle = 3.4f; // degree interval
-            //float angle = MathUtils.random(-spreadAngle, spreadAngle);
-            // Calculate the spread angle based on the inner circle radius
-            float spreadRadius = innerCircleRadius; // Use the inner circle radius
-            float angle = MathUtils.random(-spreadAngle, spreadAngle);
-            float radians = angle * MathUtils.degreesToRadians;
-            float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
-            float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
-
-            bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, player));
-            timeSinceLastShot = 0f; // reset cooldown
+            
+            // Special handling for shotgun
+            if (currentWeapon instanceof Shotgun) {
+                Array<Bullet> shotgunPellets = player.fireShotgun(bulletX, bulletY, dirX, dirY);
+                if (shotgunPellets != null) {
+                    bullets.addAll(shotgunPellets);
+                    shotFiredThisFrame = true; // Mark that a shot was fired
+                }
+            } 
+            // Handle non-automatic weapons
+            else if (!(currentWeapon instanceof Carbine)) {
+                Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+                if (bullet != null) {
+                    bullets.add(bullet);
+                    shotFiredThisFrame = true; // Mark that a shot was fired
+                }
+            }
         }
+        
+        // Handle fully automatic Carbine (fires continuously while button is held)
+        if (currentWeapon instanceof Carbine && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
+            float bulletX = player.getX();
+            float bulletY = player.getY();
+            float dirX = dx / distance;
+            float dirY = dy / distance;
+            
+            // Attempt to fire - the weapon class will handle cooldown internally
+            Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+            if (bullet != null) {
+                bullets.add(bullet);
+                shotFiredThisFrame = true; // Mark that a shot was fired
+            }
+        }
+
+        // Now update the spread multiplier AFTER weapon firing, when shotFiredThisFrame has been properly set
+        if (shotFiredThisFrame) {
+            // Increase spread when a shot is actually fired, but cap it at the maximum
+            currentSpreadMultiplier = Math.min(currentSpreadMultiplier + expansionFactor, maxSpreadMultiplier);
+        } else {
+            // Gradually decrease spread when not firing
+            currentSpreadMultiplier = Math.max(1.0f, currentSpreadMultiplier - contractionRate * delta);
+        }
+        
+        // Update the spread angle with the new multiplier for the next frame
+        spreadAngle = baseSpreadAngle * currentSpreadMultiplier;
 
         // Update and handle enemy shooting
         for (Enemy e : enemies) {
