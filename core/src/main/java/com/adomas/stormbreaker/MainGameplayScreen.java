@@ -78,10 +78,10 @@ public class MainGameplayScreen extends LevelScreen {
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
         // Add a few static enemies
-        enemies.add(new Enemy(400, 300, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(600, 400, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(800, 200, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(800, 500, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(400, 300, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(600, 400, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 200, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 500, 80, "enemy_blob.png"));
 
         // Center camera on the map
         camera.position.set(mapWidth / 2, mapHeight / 2, 0);

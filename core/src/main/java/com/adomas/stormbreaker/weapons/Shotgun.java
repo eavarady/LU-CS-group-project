@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 
 public class Shotgun extends Weapon {
-    private int pelletCount = 12;
+    private int pelletCount = 8;
     
     public Shotgun() {
         super(
@@ -14,7 +14,7 @@ public class Shotgun extends Weapon {
             2.5f,          // fireRate (shots per second)
             15,            // damage per pellet
             8.0f,         // spreadAngle (degrees)
-            0.5f,          // reticleExpansionRate
+            1.0f,          // reticleExpansionRate
             1.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );

@@ -51,11 +51,13 @@ public class Enemy extends NPC {
     // Pass reference to the player and map collisions to the update method
     public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions) {
         if (dead) return;
+
         // Update the collision rectangle position
         collisionRectangle.move(
             x - (texture.getWidth() / 4f),
             y - (texture.getHeight() / 4f)
         );
+
         // Calculate vector to player
         float dx = player.getX() - this.x;
         float dy = player.getY() - this.y;
@@ -64,18 +66,11 @@ public class Enemy extends NPC {
         // Check distance
         if (distance > visionDistance) return; // Player is too far
 
-        // Calculate angle to player in world space (0 degrees is right, increases counter-clockwise)
+        // Calculate angle to player in world space
         float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
-        
-        // Get the current enemy facing direction (in degrees)
-        // The vision cone is drawn at rotation * MathUtils.radiansToDegrees
         float enemyFacingAngle = rotation;
-        
-        // Normalize angles to [0, 360)
         angleToPlayer = (angleToPlayer + 360) % 360;
         enemyFacingAngle = (enemyFacingAngle + 360) % 360;
-        
-        // Calculate angle difference (correctly accounting for wrapping around 360 degrees)
         float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
         if (angleDifference > 180) angleDifference = 360 - angleDifference;
 
@@ -100,7 +95,33 @@ public class Enemy extends NPC {
         }
         if (blocked) return; // Player is not visible
 
-        // At this point player is visible
+        // === At this point, player is visible! ===
+
+        // Move towards the player
+        float moveSpeed = speed * delta;
+        float norm = (float) Math.sqrt(dx * dx + dy * dy);
+        if (norm > 1e-3) { // Avoid division by zero
+            float moveX = (dx / norm) * moveSpeed;
+            float moveY = (dy / norm) * moveSpeed;
+
+            // Check for collision before moving (optional, for smoother movement)
+            collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+            boolean collides = false;
+            for (CollisionRectangle rect : mapCollisions) {
+                if (collisionRectangle.collisionCheck(rect)) {
+                    collides = true;
+                    break;
+                }
+            }
+            if (!collides) {
+                x += moveX;
+                y += moveY;
+            } else {
+                // If colliding, don't move this frame (or try sliding, etc.)
+                collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+            }
+        }
+
         // Set target rotation to match the angle to player (in degrees)
         targetRotation = angleToPlayer;
         
@@ -111,9 +132,9 @@ public class Enemy extends NPC {
         if (timeSinceLastShot >= shotCooldown) {
             // Set intent to shoot and direction
             wantsToShoot = true;
-            float norm = (float)Math.sqrt(dx * dx + dy * dy);
-            shootDirX = dx / norm;
-            shootDirY = dy / norm;
+            float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+            shootDirX = dx / normShoot;
+            shootDirY = dy / normShoot;
             timeSinceLastShot = 0f;
         } else {
             wantsToShoot = false;
