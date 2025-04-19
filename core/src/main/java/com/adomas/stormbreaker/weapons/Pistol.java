@@ -9,11 +9,11 @@ public class Pistol extends Weapon {
     public Pistol() {
         super(
             "Pistol",      // name
-            5.0f,          // fireRate (shots per second)
+            8f,          // fireRate (shots per second)
             25,            // damage
             1.5f,          // spreadAngle (degrees)
             0.5f,          // reticleExpansionRate
-            0.8f,          // reticleContractionRate
+            1.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
     }

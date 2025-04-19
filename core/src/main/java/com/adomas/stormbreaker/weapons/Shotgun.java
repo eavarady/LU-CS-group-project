@@ -12,9 +12,9 @@ public class Shotgun extends Weapon {
         super(
             "Shotgun",     // name
             2.5f,          // fireRate (shots per second)
-            20,            // damage per pellet
-            15.0f,         // spreadAngle (degrees)
-            1.0f,          // reticleExpansionRate
+            15,            // damage per pellet
+            8.0f,         // spreadAngle (degrees)
+            0.5f,          // reticleExpansionRate
             1.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
