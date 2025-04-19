@@ -55,7 +55,8 @@ public class HUD {
 
         // --- Texto: Weapon ---
         font.setColor(Color.WHITE);
-        font.draw(batch, "Weapon: " + player.getCurrentWeapon(), paddingX, paddingY - lineSpacing * 2);
+        // Get the weapon name instead of using the object directly
+        font.draw(batch, "Weapon: " + player.getCurrentWeaponName(), paddingX, paddingY - lineSpacing * 2);
         batch.end();
 
         // --- Barra de vida ---
