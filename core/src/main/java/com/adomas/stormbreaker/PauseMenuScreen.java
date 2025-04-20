@@ -3,12 +3,19 @@ package com.adomas.stormbreaker;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class PauseMenuScreen implements Screen {
@@ -17,11 +24,13 @@ public class PauseMenuScreen implements Screen {
     private final Screen previousScreen;
 
     private Stage stage;
-    private Skin skin;
+
+    private Texture backgroundTex;
+    private Texture resumeTex, restartTex, exitTex;
 
     public PauseMenuScreen(StormbreakerGame game, Screen previousScreen) {
         this.game = game;
-        this.previousScreen = previousScreen; // come back to the game
+        this.previousScreen = previousScreen;
     }
 
     @Override
@@ -29,75 +38,102 @@ public class PauseMenuScreen implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        skin = new Skin(Gdx.files.internal("uiskin.json")); 
-        BitmapFont font = new BitmapFont(
-            Gdx.files.internal("default.fnt"), 
-            Gdx.files.internal("default.png"), 
-            false
-        );
+        // Load assets
+        backgroundTex = new Texture(Gdx.files.internal("pausebackround.png"));
+        resumeTex = new Texture(Gdx.files.internal("resumenewpause.png"));
+        restartTex = new Texture(Gdx.files.internal("restartnewpause.png"));
+        exitTex = new Texture(Gdx.files.internal("exitnewpause.png"));
 
-        if (skin.has("default-font", BitmapFont.class)) {
-            skin.remove("default-font", BitmapFont.class);
-        }
-        skin.add("default-font", font);
+        // Background
+        Image background = new Image(new TextureRegionDrawable(backgroundTex));
+        background.setFillParent(true);
+        background.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled); // absorb input
+        stage.addActor(background);
 
-        TextButton.TextButtonStyle textButtonStyle = skin.get("default", TextButton.TextButtonStyle.class);
-        textButtonStyle.font = font;
-        skin.add("default", textButtonStyle);
+        // Buttons
+        ImageButton resumeButton = createHoverButton(resumeTex);
+        ImageButton restartButton = createHoverButton(restartTex);
+        ImageButton exitButton = createHoverButton(exitTex);
 
+        
+        float buttonWidth = 300f;
+        float scale = buttonWidth / resumeTex.getWidth();
+        float buttonHeight = resumeTex.getHeight() * scale;
+
+        resumeButton.setSize(buttonWidth, buttonHeight);
+        restartButton.setSize(buttonWidth, buttonHeight);
+        exitButton.setSize(buttonWidth, buttonHeight);
+
+        resumeButton.pack();
+        restartButton.pack();
+        exitButton.pack();
+
+        
+        resumeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(previousScreen);
+                Gdx.input.setCursorCatched(true);
+                dispose(); 
+            }
+        });
+
+        restartButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainGameplayScreen(game));
+                dispose(); 
+            }
+        });
+
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainMenuScreen(game));
+                dispose(); // fix ghost clicks
+            }
+        });
+
+        // Layout
         Table table = new Table();
         table.setFillParent(true);
+        table.center();
+        table.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.childrenOnly); // only buttons clickable
+
+        table.add(resumeButton).width(buttonWidth).height(buttonHeight).padBottom(25f).row();
+        table.add(restartButton).width(buttonWidth).height(buttonHeight).padBottom(25f).row();
+        table.add(exitButton).width(buttonWidth).height(buttonHeight);
+
         stage.addActor(table);
+    }
 
-        // Menu buttons
-        TextButton resumeButton = new TextButton("RESUME", skin);
-        TextButton restartButton = new TextButton("RESTART", skin);
-        TextButton exitButton = new TextButton("EXIT", skin);
+    private ImageButton createHoverButton(Texture texture) {
+        TextureRegionDrawable up = new TextureRegionDrawable(new TextureRegion(texture));
+        Drawable hover = new TextureRegionDrawable(new TextureRegion(texture))
+                .tint(new Color(1f, 1f, 1f, 0.5f)); // hover tint
 
-        // Listeners
-        resumeButton.addListener(e -> {
-            if (resumeButton.isPressed()) {
-                game.setScreen(previousScreen); 
-                Gdx.input.setCursorCatched(true);
-                return true;
-            }
-            return false;
-        });
+        ImageButtonStyle style = new ImageButtonStyle();
+        style.imageUp = up;
+        style.imageOver = hover;
 
-        restartButton.addListener(e -> {
-            if (restartButton.isPressed()) {
-                game.setScreen(new MainGameplayScreen(game)); // restart level
-                return true;
-            }
-            return false;
-        });
-
-        exitButton.addListener(e -> {
-            if (exitButton.isPressed()) {
-                game.setScreen(new MainMenuScreen(game)); // Main Menu screen
-                return true;
-            }
-            return false;
-        });
-
-        table.add(resumeButton).pad(10).row();
-        table.add(restartButton).pad(10).row();
-        table.add(exitButton).pad(10);
-        table.setDebug(true);
+        ImageButton button = new ImageButton(style);
+        button.setTransform(true); // allow scaling
+        button.pack(); // shrink bounds to image
+        return button;
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 0.7f); // opaque background
+        Gdx.gl.glClearColor(0, 0, 0, 0.7f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(delta);
         stage.draw();
-        
-        // Escape key to RESUME
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(previousScreen);
             Gdx.input.setCursorCatched(true);
+            dispose(); // fix ghost clicks when resuming
         }
     }
 
@@ -113,6 +149,9 @@ public class PauseMenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        skin.dispose();
+        backgroundTex.dispose();
+        resumeTex.dispose();
+        restartTex.dispose();
+        exitTex.dispose();
     }
 }
