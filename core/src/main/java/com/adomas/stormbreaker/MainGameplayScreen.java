@@ -2,6 +2,9 @@ package com.adomas.stormbreaker;
 
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.adomas.stormbreaker.tools.MapManager;
+import com.adomas.stormbreaker.weapons.Carbine;
+import com.adomas.stormbreaker.weapons.Shotgun;
+import com.adomas.stormbreaker.weapons.Weapon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -43,6 +46,14 @@ public class MainGameplayScreen extends LevelScreen {
     private BitmapFont hudFont;
     private SpriteBatch hudBatch;
 
+    // Add these fields for tracking reticle expansion state
+    private float currentSpreadMultiplier = 1.0f; // Current spread multiplier (1.0 = default, increases when firing)
+    private float maxSpreadMultiplier = 2.0f;     // Maximum spread multiplier when firing continuously
+    private boolean shotFiredThisFrame = false;   // Flag to track if a shot was successfully fired this frame
+
+    // Add these constants for reticle drawing
+    private final float RETICLE_HAIR_LENGTH = 11.0f; // Fixed length of reticle hairs
+
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
     }
@@ -67,10 +78,10 @@ public class MainGameplayScreen extends LevelScreen {
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
         // Add a few static enemies
-        enemies.add(new Enemy(400, 300, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(600, 400, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(800, 200, 0, "enemy_blob.png"));
-        enemies.add(new Enemy(800, 500, 0, "enemy_blob.png"));
+        enemies.add(new Enemy(400, 300, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(600, 400, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 200, 80, "enemy_blob.png"));
+        enemies.add(new Enemy(800, 500, 80, "enemy_blob.png"));
 
         // Center camera on the map
         camera.position.set(mapWidth / 2, mapHeight / 2, 0);
@@ -140,6 +151,9 @@ public class MainGameplayScreen extends LevelScreen {
         }
         spriteBatch.end();
 
+        // Aim cone
+        float spreadAngle = 3f;
+
         // draw dynamic crosshair based on distance from player to mouse
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.WHITE);
@@ -166,13 +180,21 @@ public class MainGameplayScreen extends LevelScreen {
         float dy = mouseWorld.y - player.getY();
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-        // map distance to crosshair spacing (clamp between 10 and beyond)
-        float expansionFactor = 1.5f; // lower = slower expansion, higher = faster. we'll adjust as needed
-        float spacing = Math.max(5f, expansionFactor * (float) Math.sqrt(distance));
-        
-        // Adjust the circle radius to match the inner tips of the crosshair
-        float innerCircleRadius = spacing / 2f; // Inner circle touches the inner tips
+        // Reset the shot fired flag at the beginning of the frame
+        shotFiredThisFrame = false;
 
+        // Get weapon-specific spread and expansion values
+        Weapon currentWeapon = player.getCurrentWeapon();
+        float baseSpreadAngle = currentWeapon != null ? currentWeapon.getSpreadAngle() : 3.0f; // Default fallback
+        float expansionFactor = currentWeapon != null ? currentWeapon.getReticleExpansionRate() : 1.5f; // Default fallback
+        float contractionRate = currentWeapon != null ? currentWeapon.getReticleContractionRate() : 0.5f; // Default fallback
+        
+        // We'll update the spread multiplier after weapon firing
+        // For now, just calculate the initial spreadAngle
+        spreadAngle = baseSpreadAngle * currentSpreadMultiplier;
+
+        // Calculate inner circle radius based on spread angle and distance
+        float innerCircleRadius = (float) Math.tan(MathUtils.degreesToRadians * spreadAngle) * distance;
 
         // when G key is held down, enter grenade aim mode
         if (Gdx.input.isKeyPressed(Input.Keys.G)) {
@@ -221,54 +243,142 @@ public class MainGameplayScreen extends LevelScreen {
 
         wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;
 
-        // draw crosshair lines
+        // CROSSHAR AIMING AND ENEMY DETECTION
+        // Crosshair center position
         float cx = mouseWorld.x;
         float cy = mouseWorld.y;
-        // OLD CROSSHAIR CODE
-        // shapeRenderer.line(cx - spacing, cy, cx - spacing / 2, cy); // left
-        // shapeRenderer.line(cx + spacing / 2, cy, cx + spacing, cy); // right
-        // shapeRenderer.line(cx, cy - spacing, cx, cy - spacing / 2); // down
-        // shapeRenderer.line(cx, cy + spacing / 2, cx, cy + spacing); // up
-        shapeRenderer.line(cx - spacing, cy, cx - innerCircleRadius, cy); // left
-        shapeRenderer.line(cx + innerCircleRadius, cy, cx + spacing, cy); // right
-        shapeRenderer.line(cx, cy - spacing, cx, cy - innerCircleRadius); // down
-        shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + spacing); // up
+        // Check if any enemy is within the inner circle (at the crosshair) and visible (no obstacle in the way)
+        // Primitive raycasting
+        boolean enemyInCrosshairAndVisible = false;
+        for (Enemy e : enemies) {
+            float ex = e.getX();
+            float ey = e.getY();
+            float distToEnemy = Vector2.dst(cx, cy, ex, ey); // Use crosshair center!
+            if (distToEnemy <= innerCircleRadius) {
+                // Line-of-sight check: step along the line from player to enemy
+                boolean blocked = false;
+                float playerX = player.getX();
+                float playerY = player.getY();
+                float dxToEnemy = ex - playerX;
+                float dyToEnemy = ey - playerY;
+                float distanceToEnemy = Vector2.dst(playerX, playerY, ex, ey);
+                int steps = (int)(distanceToEnemy / 10f);
+                for (int i = 1; i <= steps; i++) {
+                    float t = i / (float) steps;
+                    float checkX = playerX + dxToEnemy * t;
+                    float checkY = playerY + dyToEnemy * t;
+                    for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+                        if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                            rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) break;
+                }
+                if (!blocked) {
+                    enemyInCrosshairAndVisible = true;
+                    break;
+                }
+            }
+        }
+        // Draw crosshair with fixed-length hairs
+        shapeRenderer.setColor(enemyInCrosshairAndVisible ? Color.RED : Color.WHITE);
+        
+        // Left hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx - innerCircleRadius - RETICLE_HAIR_LENGTH, cy, cx - innerCircleRadius, cy);
+        
+        // Right hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx + innerCircleRadius, cy, cx + innerCircleRadius + RETICLE_HAIR_LENGTH, cy);
+        
+        // Bottom hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx, cy - innerCircleRadius - RETICLE_HAIR_LENGTH, cx, cy - innerCircleRadius);
+        
+        // Top hair (inner radius to inner radius + fixed length)
+        shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + innerCircleRadius + RETICLE_HAIR_LENGTH);
 
         // remove mouse cursor and only keep the crosshair
         Gdx.input.setCursorCatched(true);
+
         // Draw the invisible circle for debugging
-        //shapeRenderer.setColor(Color.RED);
-        //shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
-    
+        // shapeRenderer.setColor(Color.RED);
+        // shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
+
+        // Calculate the angle from player to mouse
+        float baseAngle = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
+
+        // Calculate the left and right edge angles of the cone
+        float leftEdgeAngle = baseAngle - spreadAngle;
+        float rightEdgeAngle = baseAngle + spreadAngle;
+
+        // Calculate the end points of the cone edges (use a long enough distance, e.g., 1000 units)
+        float coneLength = 1000f;
+        float leftX = player.getX() + coneLength * MathUtils.cosDeg(leftEdgeAngle);
+        float leftY = player.getY() + coneLength * MathUtils.sinDeg(leftEdgeAngle);
+        float rightX = player.getX() + coneLength * MathUtils.cosDeg(rightEdgeAngle);
+        float rightY = player.getY() + coneLength * MathUtils.sinDeg(rightEdgeAngle);
+
+        // Draw the cone edges
+        // shapeRenderer.setColor(Color.YELLOW);
+        // shapeRenderer.line(player.getX(), player.getY(), leftX, leftY);
+        // shapeRenderer.line(player.getX(), player.getY(), rightX, rightY);
+
         shapeRenderer.end();
 
         
         ////////////////
         // bullet, grenade and enemy code
-        timeSinceLastShot += delta;
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && timeSinceLastShot >= shotCooldown && 
-            !Gdx.input.isKeyPressed(Input.Keys.G)) {
-        // if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // MINIGUN MODE
+        // Handle normal single-shot weapons with just pressed
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
             float bulletX = player.getX();
             float bulletY = player.getY();
             float dirX = dx / distance;
             float dirY = dy / distance;
-
-            // apply random spread angle
-            //float spreadAngle = 3.4f; // degree interval
-            //float angle = MathUtils.random(-spreadAngle, spreadAngle);
-            // Calculate the spread angle based on the inner circle radius
-            float spreadRadius = innerCircleRadius; // Use the inner circle radius
-            float spreadAngle = MathUtils.atan2(spreadRadius, distance) * MathUtils.radiansToDegrees;
-            //
-            float angle = MathUtils.random(-spreadAngle, spreadAngle);
-            float radians = angle * MathUtils.degreesToRadians;
-            float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
-            float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
-
-            bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, player));
-            timeSinceLastShot = 0f; // reset cooldown
+            
+            // Special handling for shotgun
+            if (currentWeapon instanceof Shotgun) {
+                Array<Bullet> shotgunPellets = player.fireShotgun(bulletX, bulletY, dirX, dirY);
+                if (shotgunPellets != null) {
+                    bullets.addAll(shotgunPellets);
+                    shotFiredThisFrame = true; // Mark that a shot was fired
+                }
+            } 
+            // Handle non-automatic weapons
+            else if (!(currentWeapon instanceof Carbine)) {
+                Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+                if (bullet != null) {
+                    bullets.add(bullet);
+                    shotFiredThisFrame = true; // Mark that a shot was fired
+                }
+            }
         }
+        
+        // Handle fully automatic Carbine (fires continuously while button is held)
+        if (currentWeapon instanceof Carbine && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
+            float bulletX = player.getX();
+            float bulletY = player.getY();
+            float dirX = dx / distance;
+            float dirY = dy / distance;
+            
+            // Attempt to fire - the weapon class will handle cooldown internally
+            Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+            if (bullet != null) {
+                bullets.add(bullet);
+                shotFiredThisFrame = true; // Mark that a shot was fired
+            }
+        }
+
+        // Now update the spread multiplier AFTER weapon firing, when shotFiredThisFrame has been properly set
+        if (shotFiredThisFrame) {
+            // Increase spread when a shot is actually fired, but cap it at the maximum
+            currentSpreadMultiplier = Math.min(currentSpreadMultiplier + expansionFactor, maxSpreadMultiplier);
+        } else {
+            // Gradually decrease spread when not firing
+            currentSpreadMultiplier = Math.max(1.0f, currentSpreadMultiplier - contractionRate * delta);
+        }
+        
+        // Update the spread angle with the new multiplier for the next frame
+        spreadAngle = baseSpreadAngle * currentSpreadMultiplier;
 
         // Update and handle enemy shooting
         for (Enemy e : enemies) {
@@ -307,6 +417,10 @@ public class MainGameplayScreen extends LevelScreen {
             Vector2 pos = g.getBody().getPosition();
             shapeRenderer.circle(pos.x * Grenade.PPM, pos.y * Grenade.PPM, g.getRadius());
             if (g.isExpired()) {
+                // Create the explosion at the grenade's current position
+                createGrenadeExplosion(pos.x * Grenade.PPM, pos.y * Grenade.PPM);
+                
+                // Clean up the grenade
                 world.destroyBody(g.getBody());
                 grenades.removeIndex(i);
             }
@@ -382,5 +496,23 @@ public class MainGameplayScreen extends LevelScreen {
 
     public Player getPlayer() {
         return player;
+    }
+
+    // creates a grenade explosion with bullets spreading in a snowflake pattern (32 directions)
+    private void createGrenadeExplosion(float x, float y) {
+        int bulletCount = 32;
+        
+        // create bullets in a circle (every 11.25 degreees)
+        for (int i = 0; i < bulletCount; i++) {
+            // calculate angle for each bullet in rads
+            float angle = (float) (i * (2 * Math.PI / bulletCount));
+            
+            // calculate direction vector for each angle
+            float dirX = (float) Math.cos(angle);
+            float dirY = (float) Math.sin(angle);
+            
+            // create the bullet and add it to the bullets array
+            bullets.add(new Bullet(x, y, dirX, dirY, null)); // null owner means explosion bullet
+        }
     }
 }

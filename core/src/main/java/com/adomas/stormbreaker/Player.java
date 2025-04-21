@@ -1,5 +1,9 @@
 package com.adomas.stormbreaker;
 
+import com.adomas.stormbreaker.weapons.Carbine;
+import com.adomas.stormbreaker.weapons.Pistol;
+import com.adomas.stormbreaker.weapons.Shotgun;
+import com.adomas.stormbreaker.weapons.Weapon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
@@ -16,7 +20,9 @@ public class Player extends Character implements Disposable {
     private float playerRadius;
 
     private float health = 100f;
-    private String currentWeapon = "AK-74";
+    // Replace string weapon with actual Weapon class
+    private Weapon currentWeapon;
+    private Array<Weapon> weapons = new Array<>();
 
     private Sound stepSound;
     private long stepSoundId = -1; // ID for the currently looping sound
@@ -30,6 +36,14 @@ public class Player extends Character implements Disposable {
         this.playerRadius = texture.getWidth() / 2f;
 
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
+        
+        // Initialize weapons
+        weapons.add(new Pistol());
+        weapons.add(new Carbine());
+        weapons.add(new Shotgun());
+        
+        // Set default weapon (Carbine)
+        currentWeapon = weapons.get(1);
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
@@ -102,6 +116,18 @@ public class Player extends Character implements Disposable {
             stepSoundId = -1;
             isWalking = false;
         }
+        
+        // Update weapon cooldowns
+        if (currentWeapon != null) {
+            currentWeapon.update(delta);
+        }
+        
+        // Check for weapon switching
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            switchToPreviousWeapon();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            switchToNextWeapon();
+        }
     }
 
     @Override
@@ -161,12 +187,44 @@ public class Player extends Character implements Disposable {
         return health;
     }
     
-    public String getCurrentWeapon() {
+    public Weapon getCurrentWeapon() {
         return currentWeapon;
     }
     
-    public float getRadius() {
-        return playerRadius;
+    // For backward compatibility with HUD
+    public String getCurrentWeaponName() {
+        if (currentWeapon != null) {
+            return currentWeapon.getName();
+        }
+        return "None";
+    }
+    
+    // Add method to fire the current weapon
+    public Bullet fireWeapon(float x, float y, float dirX, float dirY) {
+        if (currentWeapon != null) {
+            return currentWeapon.fire(x, y, dirX, dirY, this);
+        }
+        return null;
+    }
+    
+    // Special method for shotgun
+    public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY) {
+        if (currentWeapon != null && currentWeapon instanceof Shotgun) {
+            return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this);
+        }
+        return null;
+    }
+
+    public void switchToNextWeapon() {
+        int currentIndex = weapons.indexOf(currentWeapon, true);
+        int nextIndex = (currentIndex + 1) % weapons.size;
+        currentWeapon = weapons.get(nextIndex);
+    }
+    
+    public void switchToPreviousWeapon() {
+        int currentIndex = weapons.indexOf(currentWeapon, true);
+        int prevIndex = (currentIndex - 1 + weapons.size) % weapons.size;
+        currentWeapon = weapons.get(prevIndex);
     }
 
     @Override

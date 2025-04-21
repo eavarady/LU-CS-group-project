@@ -25,6 +25,10 @@ public class Enemy extends NPC {
     // When the enemy wants to shoot
     private float shootDirX = 0f;
     private float shootDirY = 0f;
+    // Rotation speed in degrees per second
+    private final float rotationSpeed = 120f;
+    // Target rotation
+    private float targetRotation = 0f;
 
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
@@ -47,11 +51,13 @@ public class Enemy extends NPC {
     // Pass reference to the player and map collisions to the update method
     public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions) {
         if (dead) return;
+
         // Update the collision rectangle position
         collisionRectangle.move(
             x - (texture.getWidth() / 4f),
             y - (texture.getHeight() / 4f)
         );
+
         // Calculate vector to player
         float dx = player.getX() - this.x;
         float dy = player.getY() - this.y;
@@ -60,16 +66,16 @@ public class Enemy extends NPC {
         // Check distance
         if (distance > visionDistance) return; // Player is too far
 
-        // Check angle (cone of vision)
+        // Calculate angle to player in world space
         float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
-        float enemyFacingAngle = this.rotation; // or whatever your enemy's facing angle is
-        // Normalize angles to [0, 360)
+        float enemyFacingAngle = rotation;
         angleToPlayer = (angleToPlayer + 360) % 360;
         enemyFacingAngle = (enemyFacingAngle + 360) % 360;
         float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
         if (angleDifference > 180) angleDifference = 360 - angleDifference;
 
-        if (angleDifference > visionAngle / 2f) return; // Player is outside vision cone
+        // Check if player is outside vision cone
+        if (angleDifference > visionAngle / 2f) return;
 
         // Line-of-sight check (simple step-based raycast)
         int steps = (int) (distance / 10f);
@@ -89,18 +95,71 @@ public class Enemy extends NPC {
         }
         if (blocked) return; // Player is not visible
 
-        // At this point player is visible
+        // === At this point, player is visible! ===
+
+        // Move towards the player
+        float moveSpeed = speed * delta;
+        float norm = (float) Math.sqrt(dx * dx + dy * dy);
+        if (norm > 1e-3) { // Avoid division by zero
+            float moveX = (dx / norm) * moveSpeed;
+            float moveY = (dy / norm) * moveSpeed;
+
+            // Check for collision before moving (optional, for smoother movement)
+            collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+            boolean collides = false;
+            for (CollisionRectangle rect : mapCollisions) {
+                if (collisionRectangle.collisionCheck(rect)) {
+                    collides = true;
+                    break;
+                }
+            }
+            if (!collides) {
+                x += moveX;
+                y += moveY;
+            } else {
+                // If colliding, don't move this frame (or try sliding, etc.)
+                collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+            }
+        }
+
+        // Set target rotation to match the angle to player (in degrees)
+        targetRotation = angleToPlayer;
+        
+        // Apply smooth rotation
+        smoothRotateTowards(targetRotation, delta);
         
         timeSinceLastShot += delta;
         if (timeSinceLastShot >= shotCooldown) {
             // Set intent to shoot and direction
             wantsToShoot = true;
-            float norm = (float)Math.sqrt(dx * dx + dy * dy);
-            shootDirX = dx / norm;
-            shootDirY = dy / norm;
+            float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+            shootDirX = dx / normShoot;
+            shootDirY = dy / normShoot;
             timeSinceLastShot = 0f;
         } else {
             wantsToShoot = false;
+        }
+    }
+    
+    // Helper method to smoothly rotate towards a target angle
+    private void smoothRotateTowards(float targetAngle, float delta) {
+        // Calculate the direct angular difference
+        float angleDiff = targetAngle - rotation;
+        
+        // Normalize to [-180, 180] range to find shortest rotation path
+        while (angleDiff > 180) angleDiff -= 360;
+        while (angleDiff < -180) angleDiff += 360;
+        
+        // Calculate maximum rotation amount this frame
+        float maxRotation = rotationSpeed * delta;
+        
+        // Apply rotation, limited by max rotation speed
+        if (Math.abs(angleDiff) <= maxRotation) {
+            // Close enough, snap to target
+            rotation = targetAngle;
+        } else {
+            // Move towards target at maximum speed (in the correct direction)
+            rotation += Math.signum(angleDiff) * maxRotation;
         }
     }
 

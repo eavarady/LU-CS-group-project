@@ -10,8 +10,9 @@ import com.badlogic.gdx.utils.Array;
 public class Bullet {
     float x, y;
     float vx, vy;
-    float speed = 5000f;
+    float speed = 2789f;
     float radius = 2.0f;
+    private int damage = 50; // Default damage
     private boolean stopped = false; // Flag to indicate if the bullet has stopped
     private Character owner; // or use a specific type if you want
 
@@ -33,6 +34,14 @@ public class Bullet {
 
     public Character getOwner() {
         return owner;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+    
+    public int getDamage() {
+        return damage;
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> obstacles) {
@@ -58,7 +67,7 @@ public class Bullet {
                 if (this.getOwner() == enemy) continue;
 
                 if (intersectsLine(startX, startY, endX, endY, enemy)) {
-                    enemy.takeDamage(50);
+                    enemy.takeDamage(damage); // Use the bullet's damage property
                     stopped = true; // Stop the bullet after hitting an enemy
                     return;
                 }

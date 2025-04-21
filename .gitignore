@@ -2958,3 +2958,14 @@ core/build/tmp/compileJava/compileTransaction/stash-dir/MainGameplayScreen.class
 core/build/tmp/compileJava/compileTransaction/stash-dir/HUD.class.uniqueId0
 core/build/tmp/compileJava/compileTransaction/stash-dir/Enemy.class.uniqueId1
 core/build/tmp/compileJava/compileTransaction/stash-dir/Bullet.class.uniqueId3
+core/build/tmp/compileJava/compileTransaction/stash-dir/Shotgun.class.uniqueId1
+core/build/tmp/compileJava/compileTransaction/stash-dir/Player.class.uniqueId0
+core/build/tmp/compileJava/compileTransaction/stash-dir/MainGameplayScreen.class.uniqueId2
+core/build/classes/java/main/com/adomas/stormbreaker/MainMenuScreen$2.class
+core/build/classes/java/main/com/adomas/stormbreaker/MainMenuScreen$1.class
+.gradle/
+build/
+core/build/
+core/bin/
+*.class
+*.jar
