@@ -15,7 +15,7 @@ public class Shotgun extends Weapon {
             15,            // damage per pellet
             8.0f,         // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
-            1.0f,          // reticleContractionRate
+            2.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
     }

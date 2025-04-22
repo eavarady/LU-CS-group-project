@@ -11,9 +11,9 @@ public class Pistol extends Weapon {
             "Pistol",      // name
             8f,          // fireRate (shots per second)
             25,            // damage
-            1.5f,          // spreadAngle (degrees)
-            0.5f,          // reticleExpansionRate
-            1.0f,          // reticleContractionRate
+            3.0f,          // spreadAngle (degrees)
+            2.0f,          // reticleExpansionRate
+            5.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
     }

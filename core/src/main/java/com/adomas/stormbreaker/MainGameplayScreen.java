@@ -48,7 +48,7 @@ public class MainGameplayScreen extends LevelScreen {
 
     // Add these fields for tracking reticle expansion state
     private float currentSpreadMultiplier = 1.0f; // Current spread multiplier (1.0 = default, increases when firing)
-    private float maxSpreadMultiplier = 2.0f;     // Maximum spread multiplier when firing continuously
+    private float maxSpreadMultiplier = 5.0f;     // Maximum spread multiplier when firing continuously
     private boolean shotFiredThisFrame = false;   // Flag to track if a shot was successfully fired this frame
 
     // Add these constants for reticle drawing

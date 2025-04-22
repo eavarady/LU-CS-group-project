@@ -11,9 +11,9 @@ public class Carbine extends Weapon {
             "Carbine",       // name
             8f,         // fireRate (shots per second)
             25,            // damage
-            3.0f,          // spreadAngle (degrees)
-            0.5f,          // reticleExpansionRate
-            1.0f,          // reticleContractionRate
+            2.5f,          // spreadAngle (degrees)
+            1.5f,          // reticleExpansionRate
+            5.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
     }

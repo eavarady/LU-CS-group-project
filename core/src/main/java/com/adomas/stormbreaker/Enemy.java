@@ -2,6 +2,7 @@ package com.adomas.stormbreaker;
 
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class Enemy extends NPC {
@@ -29,6 +30,10 @@ public class Enemy extends NPC {
     private final float rotationSpeed = 120f;
     // Target rotation
     private float targetRotation = 0f;
+    // Track last known player position
+    private Vector2 lastKnownPlayerPos = null;
+    private boolean playerRecentlySeen = false;
+    private final float ARRIVAL_THRESHOLD = 8f; // How close is 'arrived' at last known pos
 
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
@@ -64,80 +69,113 @@ public class Enemy extends NPC {
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         // Check distance
-        if (distance > visionDistance) return; // Player is too far
-
-        // Calculate angle to player in world space
-        float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
-        float enemyFacingAngle = rotation;
-        angleToPlayer = (angleToPlayer + 360) % 360;
-        enemyFacingAngle = (enemyFacingAngle + 360) % 360;
-        float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
-        if (angleDifference > 180) angleDifference = 360 - angleDifference;
-
-        // Check if player is outside vision cone
-        if (angleDifference > visionAngle / 2f) return;
-
-        // Line-of-sight check (simple step-based raycast)
-        int steps = (int) (distance / 10f);
-        boolean blocked = false;
-        for (int i = 1; i <= steps; i++) {
-            float t = i / (float) steps;
-            float checkX = this.x + dx * t;
-            float checkY = this.y + dy * t;
-            for (CollisionRectangle rect : mapCollisions) {
-                if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
-                    rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
-                    blocked = true;
-                    break;
-                }
-            }
-            if (blocked) break;
-        }
-        if (blocked) return; // Player is not visible
-
-        // === At this point, player is visible! ===
-
-        // Move towards the player
-        float moveSpeed = speed * delta;
-        float norm = (float) Math.sqrt(dx * dx + dy * dy);
-        if (norm > 1e-3) { // Avoid division by zero
-            float moveX = (dx / norm) * moveSpeed;
-            float moveY = (dy / norm) * moveSpeed;
-
-            // Check for collision before moving (optional, for smoother movement)
-            collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
-            boolean collides = false;
-            for (CollisionRectangle rect : mapCollisions) {
-                if (collisionRectangle.collisionCheck(rect)) {
-                    collides = true;
-                    break;
-                }
-            }
-            if (!collides) {
-                x += moveX;
-                y += moveY;
-            } else {
-                // If colliding, don't move this frame (or try sliding, etc.)
-                collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
-            }
-        }
-
-        // Set target rotation to match the angle to player (in degrees)
-        targetRotation = angleToPlayer;
-        
-        // Apply smooth rotation
-        smoothRotateTowards(targetRotation, delta);
-        
-        timeSinceLastShot += delta;
-        if (timeSinceLastShot >= shotCooldown) {
-            // Set intent to shoot and direction
-            wantsToShoot = true;
-            float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
-            shootDirX = dx / normShoot;
-            shootDirY = dy / normShoot;
-            timeSinceLastShot = 0f;
+        if (distance > visionDistance) {
+            playerRecentlySeen = false;
         } else {
-            wantsToShoot = false;
+            // Calculate angle to player in world space
+            float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
+            float enemyFacingAngle = rotation;
+            angleToPlayer = (angleToPlayer + 360) % 360;
+            enemyFacingAngle = (enemyFacingAngle + 360) % 360;
+            float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
+            if (angleDifference > 180) angleDifference = 360 - angleDifference;
+
+            // Check if player is outside vision cone
+            if (angleDifference <= visionAngle / 2f) {
+                // Line-of-sight check (simple step-based raycast)
+                int steps = (int) (distance / 10f);
+                boolean blocked = false;
+                for (int i = 1; i <= steps; i++) {
+                    float t = i / (float) steps;
+                    float checkX = this.x + dx * t;
+                    float checkY = this.y + dy * t;
+                    for (CollisionRectangle rect : mapCollisions) {
+                        if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                            rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) break;
+                }
+                if (!blocked) {
+                    // === At this point, player is visible! ===
+                    lastKnownPlayerPos = new Vector2(player.getX(), player.getY());
+                    playerRecentlySeen = true;
+
+                    // Move towards the player
+                    float moveSpeed = speed * delta;
+                    float norm = (float) Math.sqrt(dx * dx + dy * dy);
+                    if (norm > 1e-3) {
+                        float moveX = (dx / norm) * moveSpeed;
+                        float moveY = (dy / norm) * moveSpeed;
+                        collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+                        boolean collides = false;
+                        for (CollisionRectangle rect : mapCollisions) {
+                            if (collisionRectangle.collisionCheck(rect)) {
+                                collides = true;
+                                break;
+                            }
+                        }
+                        if (!collides) {
+                            x += moveX;
+                            y += moveY;
+                        } else {
+                            collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+                        }
+                    }
+                    // Set target rotation to match the angle to player (in degrees)
+                    targetRotation = angleToPlayer;
+                    smoothRotateTowards(targetRotation, delta);
+                    timeSinceLastShot += delta;
+                    if (timeSinceLastShot >= shotCooldown) {
+                        wantsToShoot = true;
+                        float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+                        shootDirX = dx / normShoot;
+                        shootDirY = dy / normShoot;
+                        timeSinceLastShot = 0f;
+                    } else {
+                        wantsToShoot = false;
+                    }
+                    return;
+                }
+            }
+        }
+        // If here, player is not visible
+        wantsToShoot = false;
+        if (playerRecentlySeen && lastKnownPlayerPos != null) {
+            float toLastX = lastKnownPlayerPos.x - x;
+            float toLastY = lastKnownPlayerPos.y - y;
+            float distToLast = (float)Math.sqrt(toLastX * toLastX + toLastY * toLastY);
+            if (distToLast > ARRIVAL_THRESHOLD) {
+                float moveSpeed = speed * delta;
+                float norm = (float) Math.sqrt(toLastX * toLastX + toLastY * toLastY);
+                if (norm > 1e-3) {
+                    float moveX = (toLastX / norm) * moveSpeed;
+                    float moveY = (toLastY / norm) * moveSpeed;
+                    collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+                    boolean collides = false;
+                    for (CollisionRectangle rect : mapCollisions) {
+                        if (collisionRectangle.collisionCheck(rect)) {
+                            collides = true;
+                            break;
+                        }
+                    }
+                    if (!collides) {
+                        x += moveX;
+                        y += moveY;
+                    } else {
+                        collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+                    }
+                }
+                // Rotate towards last known position
+                float angleToLast = (float)Math.toDegrees(Math.atan2(toLastY, toLastX));
+                targetRotation = angleToLast;
+                smoothRotateTowards(targetRotation, delta);
+            } else {
+                // Arrived at last known position, stop searching
+                playerRecentlySeen = false;
+            }
         }
     }
     
