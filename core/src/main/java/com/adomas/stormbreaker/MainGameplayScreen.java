@@ -1,5 +1,7 @@
 package com.adomas.stormbreaker;
 
+import java.util.Iterator;
+
 import com.adomas.stormbreaker.tools.AStarPathfinder;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.adomas.stormbreaker.tools.MapManager;
@@ -33,6 +35,7 @@ public class MainGameplayScreen extends LevelScreen {
     private Array<Bullet> bullets = new Array<>();
     private Array<Grenade> grenades = new Array<>();
     private Array<Enemy> enemies = new Array<>();
+    private Array<SoundEvent> soundEvents = new Array<>();
     private MapManager mapManager;
     private World world;
 
@@ -340,7 +343,22 @@ public class MainGameplayScreen extends LevelScreen {
 
         shapeRenderer.end();
 
-        
+        // --- SOUND EVENT SYSTEM ---
+        // Update and remove expired sound events
+        for (Iterator<SoundEvent> it = soundEvents.iterator(); it.hasNext(); ) {
+            SoundEvent se = it.next();
+            se.update(delta);
+            if (se.isExpired()) it.remove();
+        }
+        // Visualize sound radii (expanding circles)
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for (SoundEvent se : soundEvents) {
+            shapeRenderer.setColor(1f, 1f, 1f, 0.25f); // RGBA, alpha=0.25 for translucency
+            Vector2 pos = se.getPosition();
+            shapeRenderer.circle(pos.x, pos.y, se.getCurrentRadius());
+        }
+        shapeRenderer.end();
+
         ////////////////
         // bullet, grenade and enemy code
         // Update calls to fireWeapon and fireShotgun to pass currentSpreadMultiplier
@@ -387,10 +405,21 @@ public class MainGameplayScreen extends LevelScreen {
         // Update the spread angle with the new multiplier for the next frame
         spreadAngle = baseSpreadAngle * currentSpreadMultiplier;
 
+        // --- TRIGGER SOUND EVENTS ---
+        // Gunshot (when a shot is fired)
+        if (shotFiredThisFrame) {
+            soundEvents.add(new SoundEvent(
+                new Vector2(player.getX(), player.getY()),
+                350f, // gunshot max radius
+                0.5f, // duration in seconds
+                SoundEvent.Type.GUNSHOT
+            ));
+        }
+
         // Update and handle enemy shooting
         for (Enemy e : enemies) {
-            e.update(delta, player, mapManager.getCollisionRectangles());
-
+            // Use the new update method that includes soundEvents
+            e.update(delta, player, mapManager.getCollisionRectangles(), soundEvents);
             if (e.wantsToShoot()) {
                 float bulletX = e.getX();
                 float bulletY = e.getY();
@@ -525,5 +554,13 @@ public class MainGameplayScreen extends LevelScreen {
             // create the bullet and add it to the bullets array
             bullets.add(new Bullet(x, y, dirX, dirY, null)); // null owner means explosion bullet
         }
+
+        // Add grenade sound event
+        soundEvents.add(new SoundEvent(
+            new Vector2(x, y),
+            500f, // grenade explosion max radius
+            0.5f, // duration in seconds
+            SoundEvent.Type.GRENADE
+        ));
     }
 }

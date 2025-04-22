@@ -74,11 +74,46 @@ public class Enemy extends NPC {
     public void update(float delta) {
     }
     
-    // Pass reference to the player and map collisions to the update method
-    public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions) {
+    // Unified update method: handles both vision and sound detection
+    public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions, Array<SoundEvent> soundEvents) {
         if (dead) return;
 
-        // Dynamic unstuck logic: only when ALERTED or MOVING
+        // --- SOUND DETECTION ---
+        for (SoundEvent se : soundEvents) {
+            float dist = Vector2.dst(x, y, se.getPosition().x, se.getPosition().y);
+            if (dist <= se.getCurrentRadius()) {
+                // Line-of-sight check (step-based, like vision)
+                boolean blocked = false;
+                float dx = se.getPosition().x - x;
+                float dy = se.getPosition().y - y;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                int steps = (int) (distance / 10f);
+                for (int i = 1; i <= steps; i++) {
+                    float t = i / (float) steps;
+                    float checkX = x + dx * t;
+                    float checkY = y + dy * t;
+                    for (CollisionRectangle rect : mapCollisions) {
+                        if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                            rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked) break;
+                }
+                if (!blocked) {
+                    // Investigate this sound
+                    lastKnownPlayerPos = new Vector2(se.getPosition());
+                    playerRecentlySeen = false;
+                    state = EnemyState.CAUTIOUS;
+                    currentPath = null;
+                    pathIndex = 0;
+                    break; // Only react to the first valid sound event
+                }
+            }
+        }
+
+        // --- VISION/AI LOGIC ---
         if (state == EnemyState.ALERTED || state == EnemyState.MOVING) {
             if (lastPosition == null) lastPosition = new Vector2(x, y);
             float distMoved = lastPosition.dst(x, y);
@@ -210,8 +245,8 @@ public class Enemy extends NPC {
         }
         // If here, player is not visible
         wantsToShoot = false;
-        if (playerRecentlySeen && lastKnownPlayerPos != null) {
-            // Use pathfinding to move to last known player position
+        // --- FIX: Always investigate lastKnownPlayerPos if set, even if playerRecentlySeen is false ---
+        if (lastKnownPlayerPos != null) {
             pathRecalcCooldown -= delta;
             if (pathfinder != null && (currentPath == null || pathIndex >= currentPath.size || pathRecalcCooldown <= 0f)) {
                 currentPath = pathfinder.findPath(new Vector2(x, y), lastKnownPlayerPos);
@@ -255,12 +290,12 @@ public class Enemy extends NPC {
                 }
             } else {
                 // Arrived at last known position, stop searching
-                playerRecentlySeen = false;
+                lastKnownPlayerPos = null;
                 currentPath = null;
                 pathIndex = 0;
                 state = EnemyState.CAUTIOUS;
             }
-        } else if (!playerRecentlySeen) {
+        } else {
             state = EnemyState.UNAWARE;
         }
     }
