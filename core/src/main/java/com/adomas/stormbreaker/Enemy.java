@@ -84,7 +84,9 @@ public class Enemy extends NPC {
         for (SoundEvent se : soundEvents) {
             float dist = Vector2.dst(x, y, se.getPosition().x, se.getPosition().y);
             if (dist <= se.getCurrentRadius()) {
-                // Line-of-sight check (step-based, like vision)
+                // No line-of-sight check for sound anymore
+                // --- LOS check commented out below in case we want it back ---
+                /*
                 boolean blocked = false;
                 float dx = se.getPosition().x - x;
                 float dy = se.getPosition().y - y;
@@ -104,19 +106,19 @@ public class Enemy extends NPC {
                     if (blocked) break;
                 }
                 if (!blocked) {
-                    // Investigate this sound
-                    lastKnownPlayerPos = new Vector2(se.getPosition());
-                    playerRecentlySeen = false;
-                    state = EnemyState.CAUTIOUS;
-                    currentPath = null;
-                    pathIndex = 0;
-                    currentRotationSpeed = fastRotationSpeed; // Turn fast towards sound
-                    break; // Only react to the first valid sound event
-                }
+                */
+                lastKnownPlayerPos = new Vector2(se.getPosition());
+                playerRecentlySeen = false;
+                state = EnemyState.CAUTIOUS;
+                currentPath = null;
+                pathIndex = 0;
+                currentRotationSpeed = fastRotationSpeed; // Turn fast towards sound
+                break; // Only react to the first valid sound event
+                //}
             }
         }
 
-        // --- VISION/AI LOGIC ---
+        // VISION/AI STATE LOGIC
         if (state == EnemyState.ALERTED || state == EnemyState.MOVING) {
             if (lastPosition == null) lastPosition = new Vector2(x, y);
             float distMoved = lastPosition.dst(x, y);

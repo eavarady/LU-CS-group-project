@@ -412,7 +412,7 @@ public class MainGameplayScreen extends LevelScreen {
         if (shotFiredThisFrame) {
             soundEvents.add(new SoundEvent(
                 new Vector2(player.getX(), player.getY()),
-                600f, // gunshot max radius
+                500f, // gunshot max radius
                 0.01f, // duration in seconds
                 SoundEvent.Type.GUNSHOT
             ));
