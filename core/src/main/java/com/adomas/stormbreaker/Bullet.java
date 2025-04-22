@@ -14,7 +14,7 @@ public class Bullet {
     float radius = 2.0f;
     private int damage = 50; // Default damage
     private boolean stopped = false; // Flag to indicate if the bullet has stopped
-    private Character owner; // or use a specific type if you want
+    private final Character owner; // or use a specific type if you want
 
     public Bullet(float x, float y, float vx, float vy, Character owner) {
         this.x = x;
@@ -68,6 +68,10 @@ public class Bullet {
 
                 if (intersectsLine(startX, startY, endX, endY, enemy)) {
                     enemy.takeDamage(damage); // Use the bullet's damage property
+                    // Make enemy turn towards the player if hit
+                    if (owner instanceof Player player) {
+                        enemy.alertAndTurnTo(player.getX(), player.getY());
+                    }
                     stopped = true; // Stop the bullet after hitting an enemy
                     return;
                 }
@@ -101,14 +105,14 @@ public class Bullet {
     private boolean intersectsLine(float startX, float startY, float endX, float endY, Enemy enemy) {
         float enemyX = enemy.getX();
         float enemyY = enemy.getY();
-        float radius = enemy.getRadius(); // Use the enemy's hitbox radius
+        float enemyRadius = enemy.getRadius(); // Use the enemy's hitbox radius
 
         // Check if the line segment intersects the circle (enemy hitbox)
         return Intersector.intersectSegmentCircle(
             new Vector2(startX, startY),
             new Vector2(endX, endY),
             new Vector2(enemyX, enemyY),
-            radius * radius
+            enemyRadius * enemyRadius
         );
     }
 

@@ -29,6 +29,8 @@ public class Enemy extends NPC {
     private float shootDirY = 0f;
     // Rotation speed in degrees per second
     private final float rotationSpeed = 120f;
+    private final float fastRotationSpeed = 360f; // Fast turn speed for alert/hit
+    private float currentRotationSpeed = rotationSpeed;
     // Target rotation
     private float targetRotation = 0f;
     // Track last known player position
@@ -108,6 +110,7 @@ public class Enemy extends NPC {
                     state = EnemyState.CAUTIOUS;
                     currentPath = null;
                     pathIndex = 0;
+                    currentRotationSpeed = fastRotationSpeed; // Turn fast towards sound
                     break; // Only react to the first valid sound event
                 }
             }
@@ -310,16 +313,31 @@ public class Enemy extends NPC {
         while (angleDiff < -180) angleDiff += 360;
         
         // Calculate maximum rotation amount this frame
-        float maxRotation = rotationSpeed * delta;
+        float maxRotation = currentRotationSpeed * delta;
         
         // Apply rotation, limited by max rotation speed
         if (Math.abs(angleDiff) <= maxRotation) {
             // Close enough, snap to target
             rotation = targetAngle;
+            currentRotationSpeed = rotationSpeed; // Reset to normal after turn
         } else {
             // Move towards target at maximum speed (in the correct direction)
             rotation += Math.signum(angleDiff) * maxRotation;
         }
+    }
+
+    // Public method to alert and turn towards a given position (e.g., player)
+    public void alertAndTurnTo(float targetX, float targetY) {
+        if (dead) return;
+        float dx = targetX - this.x;
+        float dy = targetY - this.y;
+        float angleToTarget = (float) Math.toDegrees(Math.atan2(dy, dx));
+        this.targetRotation = angleToTarget;
+        // Instantly set state to ALERTED so AI logic can take over
+        this.state = EnemyState.ALERTED;
+        this.currentRotationSpeed = fastRotationSpeed; // Turn fast when hit
+        // Optionally, snap rotation or let update() handle smooth turning
+        // Here, we just set the target, update() will rotate smoothly
     }
 
     public void render(SpriteBatch batch) {
