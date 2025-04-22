@@ -273,6 +273,8 @@ public class MainGameplayScreen extends LevelScreen {
             float ey = e.getY();
             float distToEnemy = Vector2.dst(cx, cy, ex, ey); // Use crosshair center!
             if (distToEnemy <= innerCircleRadius) {
+                // Only consider alive enemies
+                if (e.isDead()) continue;
                 // Line-of-sight check: step along the line from player to enemy
                 boolean blocked = false;
                 float playerX = player.getX();
