@@ -39,6 +39,12 @@ public abstract class Weapon {
      */
     public abstract Bullet fire(float x, float y, float dirX, float dirY, Character owner);
     
+    /**
+     * Attempts to fire the weapon with spread multiplier
+     * @return The created bullet if fired, null otherwise
+     */
+    public abstract Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier);
+    
     public void reload() {
         currentAmmo = magazineSize;
     }

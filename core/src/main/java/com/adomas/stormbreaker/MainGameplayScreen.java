@@ -343,43 +343,35 @@ public class MainGameplayScreen extends LevelScreen {
         
         ////////////////
         // bullet, grenade and enemy code
-        // Handle normal single-shot weapons with just pressed
+        // Update calls to fireWeapon and fireShotgun to pass currentSpreadMultiplier
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
             float bulletX = player.getX();
             float bulletY = player.getY();
             float dirX = dx / distance;
             float dirY = dy / distance;
-            
-            // Special handling for shotgun
             if (currentWeapon instanceof Shotgun) {
-                Array<Bullet> shotgunPellets = player.fireShotgun(bulletX, bulletY, dirX, dirY);
+                Array<Bullet> shotgunPellets = player.fireShotgun(bulletX, bulletY, dirX, dirY, currentSpreadMultiplier);
                 if (shotgunPellets != null) {
                     bullets.addAll(shotgunPellets);
-                    shotFiredThisFrame = true; // Mark that a shot was fired
+                    shotFiredThisFrame = true;
                 }
-            } 
-            // Handle non-automatic weapons
-            else if (!(currentWeapon instanceof Carbine)) {
-                Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+            } else if (!(currentWeapon instanceof Carbine)) {
+                Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY, currentSpreadMultiplier);
                 if (bullet != null) {
                     bullets.add(bullet);
-                    shotFiredThisFrame = true; // Mark that a shot was fired
+                    shotFiredThisFrame = true;
                 }
             }
         }
-        
-        // Handle fully automatic Carbine (fires continuously while button is held)
         if (currentWeapon instanceof Carbine && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.isKeyPressed(Input.Keys.G)) {
             float bulletX = player.getX();
             float bulletY = player.getY();
             float dirX = dx / distance;
             float dirY = dy / distance;
-            
-            // Attempt to fire - the weapon class will handle cooldown internally
-            Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY);
+            Bullet bullet = player.fireWeapon(bulletX, bulletY, dirX, dirY, currentSpreadMultiplier);
             if (bullet != null) {
                 bullets.add(bullet);
-                shotFiredThisFrame = true; // Mark that a shot was fired
+                shotFiredThisFrame = true;
             }
         }
 
@@ -404,8 +396,12 @@ public class MainGameplayScreen extends LevelScreen {
                 float bulletY = e.getY();
                 float dirX = e.getShootDirX();
                 float dirY = e.getShootDirY();
-
-                bullets.add(new Bullet(bulletX, bulletY, dirX, dirY, e));
+                // Add spread to enemy bullets (same as player pistol/carbine)
+                spreadAngle = 6.0f; // degrees, adjust as needed
+                float angle = (float) (Math.atan2(dirY, dirX) + Math.toRadians(com.badlogic.gdx.math.MathUtils.random(-spreadAngle, spreadAngle)));
+                float spreadX = (float) Math.cos(angle);
+                float spreadY = (float) Math.sin(angle);
+                bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, e));
                 e.setWantsToShoot(false); // Reset shooting intent
                 // Sound or muzzle flash here?
             }

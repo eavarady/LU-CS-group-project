@@ -12,7 +12,7 @@ public class Carbine extends Weapon {
             8f,         // fireRate (shots per second)
             25,            // damage
             2.5f,          // spreadAngle (degrees)
-            1.5f,          // reticleExpansionRate
+            1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
@@ -38,6 +38,22 @@ public class Carbine extends Weapon {
         timeSinceLastShot = 0f;
         currentAmmo--;
         
+        return bullet;
+    }
+
+    public Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier) {
+        if (!canFire()) {
+            return null;
+        }
+        // Apply random spread using spreadMultiplier
+        float angle = MathUtils.random(-spreadAngle * spreadMultiplier, spreadAngle * spreadMultiplier);
+        float radians = angle * MathUtils.degreesToRadians;
+        float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
+        float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
+        Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
+        bullet.setDamage(damage);
+        timeSinceLastShot = 0f;
+        currentAmmo--;
         return bullet;
     }
 }

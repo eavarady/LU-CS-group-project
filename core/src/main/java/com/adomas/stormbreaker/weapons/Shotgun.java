@@ -15,7 +15,7 @@ public class Shotgun extends Weapon {
             15,            // damage per pellet
             8.0f,         // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
-            2.0f,          // reticleContractionRate
+            5.0f,          // reticleContractionRate
             1000           // magazineSize (set to 1000 for practically unlimited ammo)
         );
     }
@@ -37,6 +37,23 @@ public class Shotgun extends Weapon {
         bullet.setDamage(damage);
         
         return bullet;
+    }
+    
+    @Override
+    public Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier) {
+        // For Shotgun, fire() with spreadMultiplier will just fire a single pellet with spread
+        if (!canFire()) {
+            return null;
+        }
+        float pelletSpread = com.badlogic.gdx.math.MathUtils.random(-spreadAngle * spreadMultiplier, spreadAngle * spreadMultiplier);
+        float radians = pelletSpread * com.badlogic.gdx.math.MathUtils.degreesToRadians;
+        float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
+        float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
+        Bullet pellet = new Bullet(x, y, spreadX, spreadY, owner);
+        pellet.setDamage(damage);
+        timeSinceLastShot = 0f;
+        currentAmmo--;
+        return pellet;
     }
     
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, Character owner) {
@@ -64,6 +81,25 @@ public class Shotgun extends Weapon {
             pellets.add(pellet);
         }
         
+        return pellets;
+    }
+    
+    public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier) {
+        if (!canFire()) {
+            return null;
+        }
+        timeSinceLastShot = 0f;
+        currentAmmo--;
+        Array<Bullet> pellets = new Array<>();
+        for (int i = 0; i < pelletCount; i++) {
+            float pelletSpread = MathUtils.random(-spreadAngle * spreadMultiplier, spreadAngle * spreadMultiplier);
+            float radians = pelletSpread * MathUtils.degreesToRadians;
+            float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
+            float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
+            Bullet pellet = new Bullet(x, y, spreadX, spreadY, owner);
+            pellet.setDamage(damage);
+            pellets.add(pellet);
+        }
         return pellets;
     }
 }

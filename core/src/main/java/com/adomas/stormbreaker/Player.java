@@ -207,10 +207,26 @@ public class Player extends Character implements Disposable {
         return null;
     }
     
+    // Add method to fire the current weapon with spread multiplier
+    public Bullet fireWeapon(float x, float y, float dirX, float dirY, float spreadMultiplier) {
+        if (currentWeapon != null) {
+            return currentWeapon.fire(x, y, dirX, dirY, this, spreadMultiplier);
+        }
+        return null;
+    }
+    
     // Special method for shotgun
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY) {
         if (currentWeapon != null && currentWeapon instanceof Shotgun) {
             return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this);
+        }
+        return null;
+    }
+
+    // Special method for shotgun with spread multiplier
+    public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, float spreadMultiplier) {
+        if (currentWeapon != null && currentWeapon instanceof Shotgun) {
+            return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this, spreadMultiplier);
         }
         return null;
     }
