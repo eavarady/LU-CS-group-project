@@ -41,6 +41,21 @@ public class Enemy extends NPC {
     private float pathRecalcCooldown = 0f;
     private static final float PATH_RECALC_INTERVAL = 0.5f; // seconds
 
+    public enum EnemyState {
+        UNAWARE,
+        CAUTIOUS,
+        ALERTED,
+        MOVING
+    }
+
+    private EnemyState state = EnemyState.UNAWARE;
+
+    // For dynamic unstuck logic
+    private Vector2 lastPosition = null;
+    private float stuckTime = 0f;
+    private static final float STUCK_THRESHOLD = 0.5f; // seconds
+    private static final float MIN_MOVE_DIST = 2f; // minimum distance considered as movement
+
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
         this.enemyRadius = texture.getWidth() / 2f;
@@ -63,6 +78,46 @@ public class Enemy extends NPC {
     public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions) {
         if (dead) return;
 
+        // Dynamic unstuck logic: only when ALERTED or MOVING
+        if (state == EnemyState.ALERTED || state == EnemyState.MOVING) {
+            if (lastPosition == null) lastPosition = new Vector2(x, y);
+            float distMoved = lastPosition.dst(x, y);
+            if (distMoved < MIN_MOVE_DIST) {
+                stuckTime += delta;
+            } else {
+                stuckTime = 0f;
+                lastPosition.set(x, y);
+            }
+            if (stuckTime > STUCK_THRESHOLD) {
+                if (pathfinder != null && lastKnownPlayerPos != null) {
+                    currentPath = pathfinder.findPath(new Vector2(x, y), lastKnownPlayerPos);
+                    pathIndex = 0;
+                    pathRecalcCooldown = PATH_RECALC_INTERVAL;
+                }
+                // Nudge enemy in a random direction to try to get unstuck
+                float angle = (float)(Math.random() * Math.PI * 2);
+                float nudgeDist = 5f;
+                float nudgeX = (float)Math.cos(angle) * nudgeDist;
+                float nudgeY = (float)Math.sin(angle) * nudgeDist;
+                collisionRectangle.move(x + nudgeX - (texture.getWidth() / 4f), y + nudgeY - (texture.getHeight() / 4f));
+                boolean collides = false;
+                for (CollisionRectangle rect : mapCollisions) {
+                    if (collisionRectangle.collisionCheck(rect)) {
+                        collides = true;
+                        break;
+                    }
+                }
+                if (!collides) {
+                    x += nudgeX;
+                    y += nudgeY;
+                } else {
+                    collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+                }
+                stuckTime = 0f;
+                lastPosition.set(x, y);
+            }
+        }
+
         // Update the collision rectangle position
         collisionRectangle.move(
             x - (texture.getWidth() / 4f),
@@ -77,6 +132,7 @@ public class Enemy extends NPC {
         // Check distance
         if (distance > visionDistance) {
             playerRecentlySeen = false;
+            state = EnemyState.UNAWARE;
         } else {
             // Calculate angle to player in world space
             float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
@@ -111,6 +167,7 @@ public class Enemy extends NPC {
                     // Clear path when player is visible
                     currentPath = null;
                     pathIndex = 0;
+                    state = EnemyState.ALERTED;
 
                     // Move towards the player
                     float moveSpeed = speed * delta;
@@ -129,6 +186,7 @@ public class Enemy extends NPC {
                         if (!collides) {
                             x += moveX;
                             y += moveY;
+                            state = EnemyState.MOVING;
                         } else {
                             collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
                         }
@@ -182,6 +240,7 @@ public class Enemy extends NPC {
                         if (!collides) {
                             x += moveX;
                             y += moveY;
+                            state = EnemyState.MOVING;
                         } else {
                             collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
                         }
@@ -192,13 +251,17 @@ public class Enemy extends NPC {
                     smoothRotateTowards(targetRotation, delta);
                 } else {
                     pathIndex++;
+                    state = EnemyState.CAUTIOUS;
                 }
             } else {
                 // Arrived at last known position, stop searching
                 playerRecentlySeen = false;
                 currentPath = null;
                 pathIndex = 0;
+                state = EnemyState.CAUTIOUS;
             }
+        } else if (!playerRecentlySeen) {
+            state = EnemyState.UNAWARE;
         }
     }
     
@@ -291,5 +354,9 @@ public class Enemy extends NPC {
 
     public void setPathfinder(AStarPathfinder pathfinder) {
         this.pathfinder = pathfinder;
+    }
+
+    public EnemyState getState() {
+        return state;
     }
 }
