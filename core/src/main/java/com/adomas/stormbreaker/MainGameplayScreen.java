@@ -412,8 +412,8 @@ public class MainGameplayScreen extends LevelScreen {
         if (shotFiredThisFrame) {
             soundEvents.add(new SoundEvent(
                 new Vector2(player.getX(), player.getY()),
-                350f, // gunshot max radius
-                0.5f, // duration in seconds
+                600f, // gunshot max radius
+                0.01f, // duration in seconds
                 SoundEvent.Type.GUNSHOT
             ));
         }
@@ -471,16 +471,16 @@ public class MainGameplayScreen extends LevelScreen {
 
         // RENDER COLLISION RECTANGLES FOR DEBUGGING
         // Draw map collision rectangles
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.RED);
-        for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
-            shapeRenderer.rect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-        }
+        // shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        // shapeRenderer.setColor(Color.RED);
+        // for (CollisionRectangle rect : mapManager.getCollisionRectangles()) {
+        //     shapeRenderer.rect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        // }
         //Draw player collision rectangle
-        shapeRenderer.setColor(Color.GREEN);
-        CollisionRectangle playerRect = player.getCollisionRectangle();
-        shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
-        shapeRenderer.end();
+        // shapeRenderer.setColor(Color.GREEN);
+        // CollisionRectangle playerRect = player.getCollisionRectangle();
+        // shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
+        // shapeRenderer.end();
         // Draw enemy collision rectangles
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.BLUE);
@@ -560,7 +560,7 @@ public class MainGameplayScreen extends LevelScreen {
         // Add grenade sound event
         soundEvents.add(new SoundEvent(
             new Vector2(x, y),
-            500f, // grenade explosion max radius
+            600f, // grenade explosion max radius
             0.5f, // duration in seconds
             SoundEvent.Type.GRENADE
         ));
