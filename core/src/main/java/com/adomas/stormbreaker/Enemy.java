@@ -1,5 +1,6 @@
 package com.adomas.stormbreaker;
 
+import com.adomas.stormbreaker.tools.AStarPathfinder;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -34,6 +35,11 @@ public class Enemy extends NPC {
     private Vector2 lastKnownPlayerPos = null;
     private boolean playerRecentlySeen = false;
     private final float ARRIVAL_THRESHOLD = 8f; // How close is 'arrived' at last known pos
+    private AStarPathfinder pathfinder;
+    private Array<Vector2> currentPath = null;
+    private int pathIndex = 0;
+    private float pathRecalcCooldown = 0f;
+    private static final float PATH_RECALC_INTERVAL = 0.5f; // seconds
 
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
@@ -102,6 +108,9 @@ public class Enemy extends NPC {
                     // === At this point, player is visible! ===
                     lastKnownPlayerPos = new Vector2(player.getX(), player.getY());
                     playerRecentlySeen = true;
+                    // Clear path when player is visible
+                    currentPath = null;
+                    pathIndex = 0;
 
                     // Move towards the player
                     float moveSpeed = speed * delta;
@@ -144,37 +153,51 @@ public class Enemy extends NPC {
         // If here, player is not visible
         wantsToShoot = false;
         if (playerRecentlySeen && lastKnownPlayerPos != null) {
-            float toLastX = lastKnownPlayerPos.x - x;
-            float toLastY = lastKnownPlayerPos.y - y;
-            float distToLast = (float)Math.sqrt(toLastX * toLastX + toLastY * toLastY);
-            if (distToLast > ARRIVAL_THRESHOLD) {
-                float moveSpeed = speed * delta;
-                float norm = (float) Math.sqrt(toLastX * toLastX + toLastY * toLastY);
-                if (norm > 1e-3) {
-                    float moveX = (toLastX / norm) * moveSpeed;
-                    float moveY = (toLastY / norm) * moveSpeed;
-                    collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
-                    boolean collides = false;
-                    for (CollisionRectangle rect : mapCollisions) {
-                        if (collisionRectangle.collisionCheck(rect)) {
-                            collides = true;
-                            break;
+            // Use pathfinding to move to last known player position
+            pathRecalcCooldown -= delta;
+            if (pathfinder != null && (currentPath == null || pathIndex >= currentPath.size || pathRecalcCooldown <= 0f)) {
+                currentPath = pathfinder.findPath(new Vector2(x, y), lastKnownPlayerPos);
+                pathIndex = 0;
+                pathRecalcCooldown = PATH_RECALC_INTERVAL;
+            }
+            if (currentPath != null && pathIndex < currentPath.size) {
+                Vector2 target = currentPath.get(pathIndex);
+                float toTargetX = target.x - x;
+                float toTargetY = target.y - y;
+                float distToTarget = (float)Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY);
+                if (distToTarget > ARRIVAL_THRESHOLD) {
+                    float moveSpeed = speed * delta;
+                    float norm = (float) Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY);
+                    if (norm > 1e-3) {
+                        float moveX = (toTargetX / norm) * moveSpeed;
+                        float moveY = (toTargetY / norm) * moveSpeed;
+                        collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+                        boolean collides = false;
+                        for (CollisionRectangle rect : mapCollisions) {
+                            if (collisionRectangle.collisionCheck(rect)) {
+                                collides = true;
+                                break;
+                            }
+                        }
+                        if (!collides) {
+                            x += moveX;
+                            y += moveY;
+                        } else {
+                            collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
                         }
                     }
-                    if (!collides) {
-                        x += moveX;
-                        y += moveY;
-                    } else {
-                        collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
-                    }
+                    // Rotate towards target
+                    float angleToTarget = (float)Math.toDegrees(Math.atan2(toTargetY, toTargetX));
+                    targetRotation = angleToTarget;
+                    smoothRotateTowards(targetRotation, delta);
+                } else {
+                    pathIndex++;
                 }
-                // Rotate towards last known position
-                float angleToLast = (float)Math.toDegrees(Math.atan2(toLastY, toLastX));
-                targetRotation = angleToLast;
-                smoothRotateTowards(targetRotation, delta);
             } else {
                 // Arrived at last known position, stop searching
                 playerRecentlySeen = false;
+                currentPath = null;
+                pathIndex = 0;
             }
         }
     }
@@ -264,5 +287,9 @@ public class Enemy extends NPC {
     // Get rotation of the enemy
     public float getRotation() {
         return rotation;
+    }
+
+    public void setPathfinder(AStarPathfinder pathfinder) {
+        this.pathfinder = pathfinder;
     }
 }
