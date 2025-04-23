@@ -89,7 +89,8 @@ public class MainGameplayScreen extends LevelScreen {
 
         // --- Ensure all enemies have a pathfinder for A* navigation ---
         float cellSize = 32f; // You can adjust this for pathfinding granularity
-        float enemyBuffer = enemies.size > 0 ? enemies.get(0).getRadius() : 16f; // Use enemy radius as buffer
+        // Add 1 pixel to the enemy buffer to ensure a 1-pixel standoff from obstacles
+        float enemyBuffer = enemies.size > 0 ? enemies.get(0).getRadius() + 0.5f : 17f; // Use enemy radius + 1 as buffer
         AStarPathfinder pathfinder = new AStarPathfinder(
             mapManager.getMapWidth(),
             mapManager.getMapHeight(),
