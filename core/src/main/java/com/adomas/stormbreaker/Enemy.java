@@ -73,6 +73,7 @@ public class Enemy extends NPC {
     private float timeSinceDeath = 0f;
     private boolean disposeAfterDeath = false;
 
+    private boolean checkedAggressiveConversion = false;
 
     // For dynamic unstuck logic
     private Vector2 lastPosition = null;
@@ -206,6 +207,15 @@ public class Enemy extends NPC {
                 }
             }
             if (playerVisible) {
+                if (state != EnemyState.ALERTED) {
+                    // Only check conversion on transition to ALERTED
+                    if (type == EnemyType.PASSIVE && !checkedAggressiveConversion) {
+                        if (Math.random() < 0.2) {
+                            type = EnemyType.AGGRESSIVE;
+                        }
+                        checkedAggressiveConversion = true;
+                    }
+                }
                 state = EnemyState.ALERTED;
                 // Turn and shoot at player
                 float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
@@ -224,6 +234,7 @@ public class Enemy extends NPC {
             } else {
                 if (state == EnemyState.ALERTED) {
                     state = EnemyState.CAUTIOUS;
+                    checkedAggressiveConversion = false; // Reset when losing sight
                 }
                 wantsToShoot = false;
             }
