@@ -40,6 +40,8 @@ public class Player extends Character implements Disposable {
     private float reloadTime = 1.5f; // Time in seconds to complete a reload
 
     private Sound switchWeaponSound;
+    private long reloadSoundId = -1;
+    private long healSoundId = -1;
 
     private boolean isBleeding = false;
     private float bleedTimer = 0f;
@@ -160,11 +162,21 @@ public class Player extends Character implements Disposable {
 
         // Process reloading
         if (isReloading) {
+            if (reloadSoundId == -1) {
+                reloadSoundId = switchWeaponSound.loop(0.7f); // lower volume for loop
+            }
             reloadTimer += delta;
             if (reloadTimer >= reloadTime) {
                 // Reload complete
                 finishReload();
+                if (reloadSoundId != -1) {
+                    switchWeaponSound.stop(reloadSoundId);
+                    reloadSoundId = -1;
+                }
             }
+        } else if (reloadSoundId != -1) {
+            switchWeaponSound.stop(reloadSoundId);
+            reloadSoundId = -1;
         }
 
         // Bleeding mechanic
@@ -177,15 +189,29 @@ public class Player extends Character implements Disposable {
             }
             // Handle stopping bleed with F key
             if (Gdx.input.isKeyPressed(Input.Keys.F)) {
+                if (healSoundId == -1) {
+                    healSoundId = switchWeaponSound.loop(0.7f);
+                }
                 stopBleedTimer += delta;
                 if (stopBleedTimer >= STOP_BLEED_HOLD_TIME) {
                     isBleeding = false;
                     stopBleedTimer = 0f;
                     health = Math.min(health + BLEED_HEAL_AMOUNT, 100f);
+                    if (healSoundId != -1) {
+                        switchWeaponSound.stop(healSoundId);
+                        healSoundId = -1;
+                    }
                 }
             } else {
                 stopBleedTimer = 0f;
+                if (healSoundId != -1) {
+                    switchWeaponSound.stop(healSoundId);
+                    healSoundId = -1;
+                }
             }
+        } else if (healSoundId != -1) {
+            switchWeaponSound.stop(healSoundId);
+            healSoundId = -1;
         }
     }
 
@@ -325,7 +351,10 @@ public class Player extends Character implements Disposable {
     @Override
     public void dispose() {
         if (stepSound != null) {
-            stepSound.dispose(); // free sound resource(not sure if im supposed to put it here but saw in video)
+            stepSound.dispose();
+        }
+        if (switchWeaponSound != null) {
+            switchWeaponSound.dispose();
         }
         for (Texture tex : weaponTextures.values()) { 
             tex.dispose();
@@ -356,6 +385,10 @@ public class Player extends Character implements Disposable {
         }
         isReloading = false;
         reloadTimer = 0f;
+        if (reloadSoundId != -1) {
+            switchWeaponSound.stop(reloadSoundId);
+            reloadSoundId = -1;
+        }
     }
     
     /**
