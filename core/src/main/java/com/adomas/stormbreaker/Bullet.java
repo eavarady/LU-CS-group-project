@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
 public class Bullet {
     float x, y;
     float vx, vy;
-    float speed = 2789f;
+    float speed = 3000f;
     float radius = 2.0f;
     private int damage = 50; // Default damage
     private boolean stopped = false; // Flag to indicate if the bullet has stopped
