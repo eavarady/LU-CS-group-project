@@ -60,4 +60,11 @@ public class Carbine extends Weapon {
         currentAmmo--;
         return bullet;
     }
+    
+    @Override
+    protected void playFireSound() {
+        if (fireSound != null) {
+            fireSound.play(0.2f); // lower carbine volume 
+        }
+    }
 }

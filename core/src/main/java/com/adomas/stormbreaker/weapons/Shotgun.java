@@ -107,4 +107,11 @@ public class Shotgun extends Weapon {
         playFireSound();
         return pellets;
     }
+    
+    @Override
+    protected void playFireSound() {
+        if (fireSound != null) {
+            fireSound.play(0.45f); // lower volume for shotgun
+        }
+    }
 }
