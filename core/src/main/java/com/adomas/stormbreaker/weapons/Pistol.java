@@ -14,7 +14,9 @@ public class Pistol extends Weapon {
             3.0f,          // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
-            1000,           // magazineSize (set to 1000 for practically unlimited ammo)
+            15,            // magazineSize
+            4,             // startingMags
+            8,             // maxMags
             "pistol_shot.wav"
         );
     }

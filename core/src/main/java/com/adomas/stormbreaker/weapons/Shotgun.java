@@ -13,10 +13,12 @@ public class Shotgun extends Weapon {
             "Shotgun",     // name
             2.5f,          // fireRate (shots per second)
             15,            // damage per pellet
-            8.0f,         // spreadAngle (degrees)
+            8.0f,          // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
-            1000,           // magazineSize (set to 1000 for practically unlimited ammo)
+            5,             // magazineSize
+            2,             // startingMags
+            6,             // maxMags
             "shotgun_shot.wav"
         );
     }

@@ -15,11 +15,13 @@ public abstract class Weapon {
     protected float reticleContractionRate;
     protected int magazineSize;
     protected int currentAmmo;
+    protected int totalMags;     // Total number of magazines player has
+    protected int maxMagsCapacity; // Maximum number of magazines player can carry
     protected float timeSinceLastShot;
     protected Sound fireSound;
     
     public Weapon(String name, float fireRate, int damage, float spreadAngle, 
-                 float reticleExpansionRate, float reticleContractionRate, int magazineSize, String soundPath) {
+                 float reticleExpansionRate, float reticleContractionRate, int magazineSize, int startingMags, int maxMags, String soundPath) {
         this.name = name;
         this.fireRate = fireRate;
         this.shotCooldown = 1.0f / fireRate;
@@ -29,6 +31,8 @@ public abstract class Weapon {
         this.reticleContractionRate = reticleContractionRate;
         this.magazineSize = magazineSize;
         this.currentAmmo = magazineSize;
+        this.totalMags = startingMags;
+        this.maxMagsCapacity = maxMags;
         this.timeSinceLastShot = shotCooldown; // Ready to fire initially
         this.fireSound = Gdx.audio.newSound(Gdx.files.internal(soundPath));
     }
@@ -49,12 +53,40 @@ public abstract class Weapon {
      */
     public abstract Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier);
     
-    public void reload() {
+    /**
+     * Attempts to reload the weapon if magazines are available
+     * @return true if reload was successful, false if no magazines available
+     */
+    public boolean reload() {
+        if (totalMags <= 0 || currentAmmo == magazineSize) {
+            return false;
+        }
+        
+        totalMags--;
         currentAmmo = magazineSize;
+        return true;
+    }
+    
+    /**
+     * Add magazines to the weapon
+     * @param amount Number of magazines to add
+     * @return Actual number of magazines added (may be less if at capacity)
+     */
+    public int addMagazines(int amount) {
+        int magsToAdd = Math.min(amount, maxMagsCapacity - totalMags);
+        totalMags += magsToAdd;
+        return magsToAdd;
     }
     
     public boolean canFire() {
         return currentAmmo > 0 && timeSinceLastShot >= shotCooldown;
+    }
+    
+    /**
+     * Checks if weapon can be reloaded (has magazines available and isn't at full ammo)
+     */
+    public boolean canReload() {
+        return totalMags > 0 && currentAmmo < magazineSize;
     }
     
     public String getName() {
@@ -88,10 +120,18 @@ public abstract class Weapon {
     public float getFireRate() {
         return fireRate;
     }
+    
+    public int getTotalMags() {
+        return totalMags;
+    }
+    
+    public int getMaxMagsCapacity() {
+        return maxMagsCapacity;
+    }
 
     protected void playFireSound() {
         if (fireSound != null) {
-            fireSound.play(0.6f);
+            fireSound.play(0.5f);
         }
     }
 

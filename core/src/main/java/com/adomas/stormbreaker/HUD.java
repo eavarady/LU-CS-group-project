@@ -26,7 +26,7 @@ public class HUD {
         // --- Dimensiones y posición del rectángulo ---
         float rectX = 10;
         float rectY = Gdx.graphics.getHeight() - 170;
-        float rectWidth = 360;
+        float rectWidth = 460;
         float rectHeight = 130;
 
         // --- Padding y líneas ---
@@ -53,10 +53,27 @@ public class HUD {
         font.setColor(healthColor);
         font.draw(batch, "Health: " + (int) health, paddingX, paddingY);
 
-        // --- Texto: Weapon ---
+        // --- Texto: Weapon with Ammo Information ---
         font.setColor(Color.WHITE);
-        // Get the weapon name instead of using the object directly
-        font.draw(batch, "Weapon: " + player.getCurrentWeaponName(), paddingX, paddingY - lineSpacing * 2);
+        // Get the weapon name, current ammo and mag capacity
+        String weaponDisplay = "Weapon: " + player.getCurrentWeaponName();
+        
+        // Add ammo information: currentAmmo/magazineSize
+        int currentAmmo = player.getCurrentAmmo();
+        int magazineSize = player.getMagazineSize();
+        weaponDisplay += "  " + currentAmmo + "/" + magazineSize;
+        
+        // Add magazine indicators using "M" characters
+        int totalMags = player.getTotalMags();
+        if (totalMags > 0) {
+            weaponDisplay += "  ";
+            for (int i = 0; i < totalMags; i++) {
+                weaponDisplay += "M ";
+            }
+        }
+        
+        // Display the weapon info with ammo count
+        font.draw(batch, weaponDisplay, paddingX, paddingY - lineSpacing * 2);
         batch.end();
 
         // --- Barra de vida ---

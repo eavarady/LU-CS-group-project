@@ -33,6 +33,10 @@ public class Player extends Character implements Disposable {
     private Random rand = new Random(); // used to randomize pitch
     
     private Map<String, Texture> weaponTextures = new HashMap<>();
+    
+    private boolean isReloading = false;
+    private float reloadTimer = 0f;
+    private float reloadTime = 1.5f; // Time in seconds to complete a reload
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
@@ -137,6 +141,20 @@ public class Player extends Character implements Disposable {
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             switchToNextWeapon();
         }
+        
+        // Handle reload input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            startReload();
+        }
+
+        // Process reloading
+        if (isReloading) {
+            reloadTimer += delta;
+            if (reloadTimer >= reloadTime) {
+                // Reload complete
+                finishReload();
+            }
+        }
     }
 
     @Override
@@ -210,6 +228,10 @@ public class Player extends Character implements Disposable {
     
     // Add method to fire the current weapon
     public Bullet fireWeapon(float x, float y, float dirX, float dirY) {
+        if (isReloading) {
+            return null; // Can't fire while reloading
+        }
+        
         if (currentWeapon != null) {
             return currentWeapon.fire(x, y, dirX, dirY, this);
         }
@@ -218,6 +240,10 @@ public class Player extends Character implements Disposable {
     
     // Add method to fire the current weapon with spread multiplier
     public Bullet fireWeapon(float x, float y, float dirX, float dirY, float spreadMultiplier) {
+        if (isReloading) {
+            return null; // Can't fire while reloading
+        }
+        
         if (currentWeapon != null) {
             return currentWeapon.fire(x, y, dirX, dirY, this, spreadMultiplier);
         }
@@ -226,6 +252,10 @@ public class Player extends Character implements Disposable {
     
     // Special method for shotgun
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY) {
+        if (isReloading) {
+            return null; // Can't fire while reloading
+        }
+        
         if (currentWeapon != null && currentWeapon instanceof Shotgun) {
             return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this);
         }
@@ -234,6 +264,10 @@ public class Player extends Character implements Disposable {
 
     // Special method for shotgun with spread multiplier
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, float spreadMultiplier) {
+        if (isReloading) {
+            return null; // Can't fire while reloading
+        }
+        
         if (currentWeapon != null && currentWeapon instanceof Shotgun) {
             return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this, spreadMultiplier);
         }
@@ -263,5 +297,87 @@ public class Player extends Character implements Disposable {
             tex.dispose();
         }
         super.dispose();
+    }
+
+    /**
+     * Starts the reload process for the current weapon
+     * @return true if reload started, false if not possible to reload
+     */
+    public boolean startReload() {
+        if (isReloading || currentWeapon == null || !currentWeapon.canReload()) {
+            return false;
+        }
+        
+        isReloading = true;
+        reloadTimer = 0f;
+        return true;
+    }
+    
+    /**
+     * Completes the reload process
+     */
+    private void finishReload() {
+        if (currentWeapon != null) {
+            currentWeapon.reload();
+        }
+        isReloading = false;
+        reloadTimer = 0f;
+    }
+    
+    /**
+     * Checks if player is currently reloading
+     */
+    public boolean isReloading() {
+        return isReloading;
+    }
+    
+    /**
+     * Returns the reload progress as a value between 0 and 1
+     */
+    public float getReloadProgress() {
+        if (!isReloading) {
+            return 0f;
+        }
+        return reloadTimer / reloadTime;
+    }
+    
+    /**
+     * Gets the current ammo in the weapon
+     */
+    public int getCurrentAmmo() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getCurrentAmmo();
+    }
+    
+    /**
+     * Gets the magazine size of the current weapon
+     */
+    public int getMagazineSize() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getMagazineSize();
+    }
+    
+    /**
+     * Gets the total magazines remaining for the current weapon
+     */
+    public int getTotalMags() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getTotalMags();
+    }
+    
+    /**
+     * Gets the maximum number of magazines the player can carry for the current weapon
+     */
+    public int getMaxMags() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getMaxMagsCapacity();
     }
 }
