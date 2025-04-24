@@ -16,7 +16,8 @@ public class Shotgun extends Weapon {
             8.0f,         // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
-            1000           // magazineSize (set to 1000 for practically unlimited ammo)
+            1000,           // magazineSize (set to 1000 for practically unlimited ammo)
+            "shotgun_shot.wav"
         );
     }
     
@@ -35,6 +36,8 @@ public class Shotgun extends Weapon {
         // Create a single bullet for now (center pellet)
         Bullet bullet = new Bullet(x, y, dirX, dirY, owner);
         bullet.setDamage(damage);
+
+        playFireSound();
         
         return bullet;
     }
@@ -51,6 +54,7 @@ public class Shotgun extends Weapon {
         float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
         Bullet pellet = new Bullet(x, y, spreadX, spreadY, owner);
         pellet.setDamage(damage);
+        playFireSound();
         timeSinceLastShot = 0f;
         currentAmmo--;
         return pellet;
@@ -80,7 +84,7 @@ public class Shotgun extends Weapon {
             pellet.setDamage(damage);
             pellets.add(pellet);
         }
-        
+        playFireSound();
         return pellets;
     }
     
@@ -100,6 +104,14 @@ public class Shotgun extends Weapon {
             pellet.setDamage(damage);
             pellets.add(pellet);
         }
+        playFireSound();
         return pellets;
+    }
+    
+    @Override
+    protected void playFireSound() {
+        if (fireSound != null) {
+            fireSound.play(0.45f); // lower volume for shotgun
+        }
     }
 }

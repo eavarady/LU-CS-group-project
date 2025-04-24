@@ -10,6 +10,7 @@ import com.adomas.stormbreaker.weapons.Shotgun;
 import com.adomas.stormbreaker.weapons.Weapon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -57,6 +58,8 @@ public class MainGameplayScreen extends LevelScreen {
 
     // Add these constants for reticle drawing
     private final float RETICLE_HAIR_LENGTH = 11.0f; // Fixed length of reticle hairs
+
+    private Sound grenadeExplosionSound;
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -129,6 +132,7 @@ public class MainGameplayScreen extends LevelScreen {
             body.createFixture(fixtureDef);
             shape.dispose();
         }
+        grenadeExplosionSound = Gdx.audio.newSound(Gdx.files.internal("grenade.wav")); // <-- NUEVO
     }
 
     @Override
@@ -532,6 +536,7 @@ public class MainGameplayScreen extends LevelScreen {
         if (world != null) {
             world.dispose();
         }
+        grenadeExplosionSound.dispose();
         super.dispose();
         mapManager.dispose();
         player.dispose();
@@ -565,5 +570,6 @@ public class MainGameplayScreen extends LevelScreen {
             0.5f, // duration in seconds
             SoundEvent.Type.GRENADE
         ));
+        grenadeExplosionSound.play(1.0f);  
     }
 }

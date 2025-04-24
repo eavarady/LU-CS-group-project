@@ -2,6 +2,8 @@ package com.adomas.stormbreaker.weapons;
 
 import com.adomas.stormbreaker.Bullet;
 import com.adomas.stormbreaker.Character;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 
 public abstract class Weapon {
     protected String name;
@@ -14,9 +16,10 @@ public abstract class Weapon {
     protected int magazineSize;
     protected int currentAmmo;
     protected float timeSinceLastShot;
+    protected Sound fireSound;
     
     public Weapon(String name, float fireRate, int damage, float spreadAngle, 
-                 float reticleExpansionRate, float reticleContractionRate, int magazineSize) {
+                 float reticleExpansionRate, float reticleContractionRate, int magazineSize, String soundPath) {
         this.name = name;
         this.fireRate = fireRate;
         this.shotCooldown = 1.0f / fireRate;
@@ -27,6 +30,7 @@ public abstract class Weapon {
         this.magazineSize = magazineSize;
         this.currentAmmo = magazineSize;
         this.timeSinceLastShot = shotCooldown; // Ready to fire initially
+        this.fireSound = Gdx.audio.newSound(Gdx.files.internal(soundPath));
     }
     
     public void update(float delta) {
@@ -84,4 +88,17 @@ public abstract class Weapon {
     public float getFireRate() {
         return fireRate;
     }
+
+    protected void playFireSound() {
+        if (fireSound != null) {
+            fireSound.play(0.6f);
+        }
+    }
+
+    public void dispose() {
+        if (fireSound != null) {
+            fireSound.dispose();
+        }
+    }
+
 }

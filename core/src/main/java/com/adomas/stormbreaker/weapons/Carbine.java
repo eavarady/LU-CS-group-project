@@ -14,7 +14,8 @@ public class Carbine extends Weapon {
             2.5f,          // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
-            1000           // magazineSize (set to 1000 for practically unlimited ammo)
+            1000,           // magazineSize (set to 1000 for practically unlimited ammo)
+            "carbine_shot.ogg"
         );
     }
     
@@ -33,6 +34,8 @@ public class Carbine extends Weapon {
         // Create bullet with the modified direction
         Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
         bullet.setDamage(damage);
+
+        playFireSound();
         
         // Reset cooldown and decrease ammo
         timeSinceLastShot = 0f;
@@ -52,8 +55,16 @@ public class Carbine extends Weapon {
         float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
         Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
         bullet.setDamage(damage);
+        playFireSound();
         timeSinceLastShot = 0f;
         currentAmmo--;
         return bullet;
+    }
+    
+    @Override
+    protected void playFireSound() {
+        if (fireSound != null) {
+            fireSound.play(0.2f); // lower carbine volume 
+        }
     }
 }

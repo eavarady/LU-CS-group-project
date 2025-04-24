@@ -8,11 +8,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
 import java.util.Random;
+import java.util.Map;                         
+import java.util.HashMap; 
 
 public class Player extends Character implements Disposable {
     private OrthographicCamera camera;
@@ -28,6 +31,8 @@ public class Player extends Character implements Disposable {
     private long stepSoundId = -1; // ID for the currently looping sound
     private boolean isWalking = false;
     private Random rand = new Random(); // used to randomize pitch
+    
+    private Map<String, Texture> weaponTextures = new HashMap<>();
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
@@ -44,6 +49,10 @@ public class Player extends Character implements Disposable {
         
         // Set default weapon (Carbine)
         currentWeapon = weapons.get(1);
+        weaponTextures.put("Pistol", new Texture(Gdx.files.internal("player_sprite_pistol.png")));
+        weaponTextures.put("Carbine", new Texture(Gdx.files.internal("player_sprite_carbine.png")));
+        weaponTextures.put("Shotgun", new Texture(Gdx.files.internal("player_sprite_shotgun.png")));
+        this.texture = weaponTextures.get(currentWeapon.getName());
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
@@ -235,18 +244,23 @@ public class Player extends Character implements Disposable {
         int currentIndex = weapons.indexOf(currentWeapon, true);
         int nextIndex = (currentIndex + 1) % weapons.size;
         currentWeapon = weapons.get(nextIndex);
-    }
+        this.texture = weaponTextures.get(currentWeapon.getName());
+    } 
     
     public void switchToPreviousWeapon() {
         int currentIndex = weapons.indexOf(currentWeapon, true);
         int prevIndex = (currentIndex - 1 + weapons.size) % weapons.size;
         currentWeapon = weapons.get(prevIndex);
+        this.texture = weaponTextures.get(currentWeapon.getName());
     }
 
     @Override
     public void dispose() {
         if (stepSound != null) {
             stepSound.dispose(); // free sound resource(not sure if im supposed to put it here but saw in video)
+        }
+        for (Texture tex : weaponTextures.values()) { 
+            tex.dispose();
         }
         super.dispose();
     }

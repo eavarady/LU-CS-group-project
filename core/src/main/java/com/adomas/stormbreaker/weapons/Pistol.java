@@ -14,7 +14,8 @@ public class Pistol extends Weapon {
             3.0f,          // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
-            1000           // magazineSize (set to 1000 for practically unlimited ammo)
+            1000,           // magazineSize (set to 1000 for practically unlimited ammo)
+            "pistol_shot.wav"
         );
     }
     
@@ -33,6 +34,8 @@ public class Pistol extends Weapon {
         // Create bullet with the modified direction
         Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
         bullet.setDamage(damage);
+
+        playFireSound();
         
         // Reset cooldown and decrease ammo
         timeSinceLastShot = 0f;
@@ -56,6 +59,8 @@ public class Pistol extends Weapon {
         // Create bullet with the modified direction
         Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
         bullet.setDamage(damage);
+
+        playFireSound();
         
         // Reset cooldown and decrease ammo
         timeSinceLastShot = 0f;
