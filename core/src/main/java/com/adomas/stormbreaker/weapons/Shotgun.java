@@ -28,12 +28,17 @@ public class Shotgun extends Weapon {
         if (!canFire()) {
             return null;
         }
-        
 
-        // Reset cooldown and decrease ammo
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
-
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
         
         // Create a single bullet for now (center pellet)
         Bullet bullet = new Bullet(x, y, dirX, dirY, owner);
@@ -50,15 +55,28 @@ public class Shotgun extends Weapon {
         if (!canFire()) {
             return null;
         }
+        
         float pelletSpread = com.badlogic.gdx.math.MathUtils.random(-spreadAngle * spreadMultiplier, spreadAngle * spreadMultiplier);
         float radians = pelletSpread * com.badlogic.gdx.math.MathUtils.degreesToRadians;
         float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
         float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
+        
         Bullet pellet = new Bullet(x, y, spreadX, spreadY, owner);
         pellet.setDamage(damage);
+        
         playFireSound();
+        
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
+        
         return pellet;
     }
     
@@ -67,9 +85,16 @@ public class Shotgun extends Weapon {
             return null;
         }
         
-        // Reset cooldown and decrease ammo
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
         
         Array<Bullet> pellets = new Array<>();
         
@@ -94,8 +119,18 @@ public class Shotgun extends Weapon {
         if (!canFire()) {
             return null;
         }
+        
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
+        
         Array<Bullet> pellets = new Array<>();
         for (int i = 0; i < pelletCount; i++) {
             float pelletSpread = MathUtils.random(-spreadAngle * spreadMultiplier, spreadAngle * spreadMultiplier);

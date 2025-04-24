@@ -352,6 +352,16 @@ public class Player extends Character implements Disposable {
     }
     
     /**
+     * Gets the total ammo count including round in chamber if present
+     */
+    public int getTotalAmmoCount() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getTotalAmmoCount();
+    }
+    
+    /**
      * Gets the magazine size of the current weapon
      */
     public int getMagazineSize() {
@@ -371,6 +381,16 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getTotalMags();
     }
     
+    /**
+     * Checks if the current weapon has a round in the chamber
+     */
+    public boolean hasRoundInChamber() {
+        if (currentWeapon == null) {
+            return false;
+        }
+        return currentWeapon.hasRoundInChamber();
+    }
+
     /**
      * Gets the maximum number of magazines the player can carry for the current weapon
      */

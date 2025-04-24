@@ -39,9 +39,16 @@ public class Carbine extends Weapon {
 
         playFireSound();
         
-        // Reset cooldown and decrease ammo
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
         
         return bullet;
     }
@@ -58,8 +65,18 @@ public class Carbine extends Weapon {
         Bullet bullet = new Bullet(x, y, spreadX, spreadY, owner);
         bullet.setDamage(damage);
         playFireSound();
+        
+        // Reset cooldown
         timeSinceLastShot = 0f;
-        currentAmmo--;
+        
+        // Use round in chamber first if it exists
+        if (hasRoundInChamber) {
+            hasRoundInChamber = false;
+        } else {
+            // Otherwise use from magazine
+            currentAmmo--;
+        }
+        
         return bullet;
     }
     

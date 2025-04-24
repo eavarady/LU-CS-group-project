@@ -26,7 +26,7 @@ public class HUD {
         // --- Dimensiones y posición del rectángulo ---
         float rectX = 10;
         float rectY = Gdx.graphics.getHeight() - 170;
-        float rectWidth = 460;
+        float rectWidth = 460; // Increased to accommodate ammo display
         float rectHeight = 130;
 
         // --- Padding y líneas ---
@@ -58,10 +58,10 @@ public class HUD {
         // Get the weapon name, current ammo and mag capacity
         String weaponDisplay = "Weapon: " + player.getCurrentWeaponName();
         
-        // Add ammo information: currentAmmo/magazineSize
-        int currentAmmo = player.getCurrentAmmo();
+        // Add ammo information: totalAmmoCount/magazineSize
+        int totalAmmoCount = player.getTotalAmmoCount();
         int magazineSize = player.getMagazineSize();
-        weaponDisplay += "  " + currentAmmo + "/" + magazineSize;
+        weaponDisplay += "  " + totalAmmoCount + "/" + magazineSize;
         
         // Add magazine indicators using "M" characters
         int totalMags = player.getTotalMags();

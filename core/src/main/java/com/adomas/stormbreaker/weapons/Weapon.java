@@ -19,6 +19,7 @@ public abstract class Weapon {
     protected int maxMagsCapacity; // Maximum number of magazines player can carry
     protected float timeSinceLastShot;
     protected Sound fireSound;
+    protected boolean hasRoundInChamber = false; // Track if there's a round in the chamber
     
     public Weapon(String name, float fireRate, int damage, float spreadAngle, 
                  float reticleExpansionRate, float reticleContractionRate, int magazineSize, int startingMags, int maxMags, String soundPath) {
@@ -30,7 +31,7 @@ public abstract class Weapon {
         this.reticleExpansionRate = reticleExpansionRate;
         this.reticleContractionRate = reticleContractionRate;
         this.magazineSize = magazineSize;
-        this.currentAmmo = magazineSize;
+        this.currentAmmo = magazineSize; // Start with a full magazine
         this.totalMags = startingMags;
         this.maxMagsCapacity = maxMags;
         this.timeSinceLastShot = shotCooldown; // Ready to fire initially
@@ -54,16 +55,26 @@ public abstract class Weapon {
     public abstract Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier);
     
     /**
-     * Attempts to reload the weapon if magazines are available
-     * @return true if reload was successful, false if no magazines available
+     * Attempts to reload the weapon
+     * @return true if reload was successful, false if no magazines available or already at maximum capacity
      */
     public boolean reload() {
-        if (totalMags <= 0 || currentAmmo == magazineSize) {
+        // Can't reload if:
+        // 1. No magazines left
+        // 2. Already at maximum capacity (full magazine + round in chamber)
+        if (totalMags <= 0 || (currentAmmo == magazineSize && hasRoundInChamber)) {
             return false;
         }
         
+        // Tactical reload (there are still rounds in the current magazine)
+        boolean tacticalReload = currentAmmo > 0;
+        
+        // If doing a tactical reload, keep a round in the chamber
+        hasRoundInChamber = tacticalReload;
+        
         totalMags--;
         currentAmmo = magazineSize;
+        
         return true;
     }
     
@@ -79,14 +90,25 @@ public abstract class Weapon {
     }
     
     public boolean canFire() {
-        return currentAmmo > 0 && timeSinceLastShot >= shotCooldown;
+        // Can fire if there's ammo in the magazine or a round in the chamber
+        return (currentAmmo > 0 || hasRoundInChamber) && timeSinceLastShot >= shotCooldown;
     }
     
     /**
-     * Checks if weapon can be reloaded (has magazines available and isn't at full ammo)
+     * Checks if weapon can be reloaded (has magazines available and isn't at maximum capacity)
      */
     public boolean canReload() {
-        return totalMags > 0 && currentAmmo < magazineSize;
+        // Can reload if:
+        // 1. There are magazines available
+        // 2. Not at maximum capacity (full magazine + round in chamber)
+        return totalMags > 0 && !(currentAmmo == magazineSize && hasRoundInChamber);
+    }
+    
+    /**
+     * Gets the total effective ammo count (magazine + chamber)
+     */
+    public int getTotalAmmoCount() {
+        return currentAmmo + (hasRoundInChamber ? 1 : 0);
     }
     
     public String getName() {
@@ -128,6 +150,10 @@ public abstract class Weapon {
     public int getMaxMagsCapacity() {
         return maxMagsCapacity;
     }
+    
+    public boolean hasRoundInChamber() {
+        return hasRoundInChamber;
+    }
 
     protected void playFireSound() {
         if (fireSound != null) {
@@ -140,5 +166,4 @@ public abstract class Weapon {
             fireSound.dispose();
         }
     }
-
 }
