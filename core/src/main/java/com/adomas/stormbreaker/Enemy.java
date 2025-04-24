@@ -348,9 +348,14 @@ public class Enemy extends NPC {
         }
     }
 
-    public void takeDamage(int amount) {
+    public void takeDamage(int baseDamage) {
         if (!dead) {
-            health -= amount;
+            DamageModel.HitResult hit = DamageModel.getHitResult();
+            System.out.println("BodyPart Hit: " + hit.part);
+            int finalDamage = Math.round(baseDamage * hit.multiplier);
+            health -= finalDamage;
+            // Optionally: handle bleed effect here using hit.bleedChance
+            // Example: if (Math.random() < hit.bleedChance) { /* apply bleed */ }
             if (health <= 0) {
                 dead = true;
             }

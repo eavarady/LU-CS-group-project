@@ -67,7 +67,7 @@ public class Bullet {
                 if (this.getOwner() == enemy) continue;
 
                 if (intersectsLine(startX, startY, endX, endY, enemy)) {
-                    enemy.takeDamage(damage); // Use the bullet's damage property
+                    enemy.takeDamage(damage); // Now uses probabilistic model
                     // Make enemy turn towards the player if hit
                     if (owner instanceof Player player) {
                         enemy.alertAndTurnTo(player.getX(), player.getY());

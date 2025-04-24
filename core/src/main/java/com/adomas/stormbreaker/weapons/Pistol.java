@@ -10,7 +10,7 @@ public class Pistol extends Weapon {
         super(
             "Pistol",      // name
             8f,          // fireRate (shots per second)
-            25,            // damage
+            20,            // damage
             3.0f,          // spreadAngle (degrees)
             1.0f,          // reticleExpansionRate
             5.0f,          // reticleContractionRate
