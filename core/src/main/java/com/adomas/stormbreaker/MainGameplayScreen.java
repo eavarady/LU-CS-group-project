@@ -448,15 +448,23 @@ public class MainGameplayScreen extends LevelScreen {
         shapeRenderer.setColor(Color.WHITE);
         for (int i = bullets.size - 1; i >= 0; i--) {
             Bullet b = bullets.get(i);
-            b.update(delta, enemies, mapManager.getCollisionRectangles()); // Pass obstacles to the bullet
+            b.update(delta, enemies, mapManager.getCollisionRectangles(), player); // Pass obstacles to the bullet
             b.render(shapeRenderer);
 
             if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
                 bullets.removeIndex(i); // Remove bullet if it goes off-screen
             }
         }
+        shapeRenderer.end();
+
+        // Check for player death and reset screen if needed
+        if (player.getHealth() <= 0) {
+            game.setScreen(new MainGameplayScreen(game));
+            return;
+        }
 
         // render grenades
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.BLACK);
         for (int i = grenades.size - 1; i >= 0; i--) {
             Grenade g = grenades.get(i);

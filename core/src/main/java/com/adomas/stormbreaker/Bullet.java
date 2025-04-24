@@ -44,7 +44,7 @@ public class Bullet {
         return damage;
     }
 
-    public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> obstacles) {
+    public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> obstacles, Player player) {
         if (stopped) return; // If the bullet is stopped, do nothing
 
         float stepSize = 5f; // Maximum distance the bullet can travel in one sub-step
@@ -67,12 +67,28 @@ public class Bullet {
                 if (this.getOwner() == enemy) continue;
 
                 if (intersectsLine(startX, startY, endX, endY, enemy)) {
-                    enemy.takeDamage(damage); // Use the bullet's damage property
+                    enemy.takeDamage(damage); // Now uses probabilistic model
                     // Make enemy turn towards the player if hit
-                    if (owner instanceof Player player) {
-                        enemy.alertAndTurnTo(player.getX(), player.getY());
+                    if (owner instanceof Player playerOwner) {
+                        enemy.alertAndTurnTo(playerOwner.getX(), playerOwner.getY());
                     }
                     stopped = true; // Stop the bullet after hitting an enemy
+                    return;
+                }
+            }
+
+            // Check for collision with player (if bullet is not from player)
+            if (player != null && this.getOwner() != player) {
+                float playerX = player.getX();
+                float playerY = player.getY();
+                float playerRadius = player.getCollisionRectangle().getWidth() / 2f;
+                if (Intersector.intersectSegmentCircle(
+                        new Vector2(startX, startY),
+                        new Vector2(endX, endY),
+                        new Vector2(playerX, playerY),
+                        playerRadius * playerRadius)) {
+                    player.takeDamage(damage);
+                    stopped = true;
                     return;
                 }
             }

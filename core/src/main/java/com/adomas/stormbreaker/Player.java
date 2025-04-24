@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
+import com.adomas.stormbreaker.DamageModel;
 import java.util.Random;
 import java.util.Map;                         
 import java.util.HashMap; 
@@ -357,6 +358,16 @@ public class Player extends Character implements Disposable {
     }
     
     /**
+     * Gets the total ammo count including round in chamber if present
+     */
+    public int getTotalAmmoCount() {
+        if (currentWeapon == null) {
+            return 0;
+        }
+        return currentWeapon.getTotalAmmoCount();
+    }
+    
+    /**
      * Gets the magazine size of the current weapon
      */
     public int getMagazineSize() {
@@ -377,6 +388,16 @@ public class Player extends Character implements Disposable {
     }
     
     /**
+     * Checks if the current weapon has a round in the chamber
+     */
+    public boolean hasRoundInChamber() {
+        if (currentWeapon == null) {
+            return false;
+        }
+        return currentWeapon.hasRoundInChamber();
+    }
+
+    /**
      * Gets the maximum number of magazines the player can carry for the current weapon
      */
     public int getMaxMags() {
@@ -384,5 +405,19 @@ public class Player extends Character implements Disposable {
             return 0;
         }
         return currentWeapon.getMaxMagsCapacity();
+    }
+
+    /**
+     * Applies damage to the player using a probabilistic damage model
+     * @param baseDamage The base damage value
+     */
+    public void takeDamage(int baseDamage) {
+        DamageModel.HitResult hit = DamageModel.getHitResult();
+        System.out.println("BodyPart Hit: " + hit.part);
+        int finalDamage = Math.round(baseDamage * hit.multiplier);
+        health -= finalDamage;
+        // Optionally: handle bleed effect here using hit.bleedChance
+        // Example: if (Math.random() < hit.bleedChance) { /* apply bleed */ }
+        if (health < 0) health = 0;
     }
 }
