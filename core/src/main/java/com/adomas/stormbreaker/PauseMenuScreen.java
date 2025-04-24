@@ -3,6 +3,7 @@ package com.adomas.stormbreaker;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+
 public class PauseMenuScreen implements Screen {
 
     private final StormbreakerGame game;
@@ -28,6 +30,8 @@ public class PauseMenuScreen implements Screen {
     private Texture backgroundTex;
     private Texture resumeTex, restartTex, exitTex;
 
+    private Sound clickSound;
+
     public PauseMenuScreen(StormbreakerGame game, Screen previousScreen) {
         this.game = game;
         this.previousScreen = previousScreen;
@@ -37,6 +41,7 @@ public class PauseMenuScreen implements Screen {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+        game.menuMusic.play();
 
         // Load assets
         backgroundTex = new Texture(Gdx.files.internal("pausebackround.png"));
@@ -72,8 +77,10 @@ public class PauseMenuScreen implements Screen {
         resumeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
                 game.setScreen(previousScreen);
                 Gdx.input.setCursorCatched(true);
+                game.menuMusic.stop();
                 dispose(); 
             }
         });
@@ -81,7 +88,9 @@ public class PauseMenuScreen implements Screen {
         restartButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
                 game.setScreen(new MainGameplayScreen(game));
+                game.menuMusic.stop();
                 dispose(); 
             }
         });
@@ -89,6 +98,7 @@ public class PauseMenuScreen implements Screen {
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
                 game.setScreen(new MainMenuScreen(game));
                 dispose(); // fix ghost clicks
             }
@@ -105,6 +115,8 @@ public class PauseMenuScreen implements Screen {
         table.add(exitButton).width(buttonWidth).height(buttonHeight);
 
         stage.addActor(table);
+
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click_button.mp3"));
     }
 
     private ImageButton createHoverButton(Texture texture) {

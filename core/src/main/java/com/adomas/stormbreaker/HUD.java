@@ -2,6 +2,7 @@ package com.adomas.stormbreaker;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -10,11 +11,17 @@ public class HUD {
 
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
+    private Texture pistolIcon;
+    private Texture carbineIcon;
+    private Texture shotgunIcon;
 
     public HUD(BitmapFont font) {
         this.font = font;
         font.getData().setScale(2f);
         this.shapeRenderer = new ShapeRenderer();
+        pistolIcon = new Texture(Gdx.files.internal("hud_pistol1.png"));
+        carbineIcon = new Texture(Gdx.files.internal("hud_carbine1.png"));
+        shotgunIcon = new Texture(Gdx.files.internal("hud_shotgun1.png"));
     }
 
     public void render(SpriteBatch batch, Player player) {
@@ -23,18 +30,18 @@ public class HUD {
         float green = health / 100f;
         Color healthColor = new Color(red, green, 0, 1);
 
-        // --- Dimensiones y posición del rectángulo ---
+        // --- Dimensions of rectangle ---
         float rectX = 10;
         float rectY = Gdx.graphics.getHeight() - 170;
         float rectWidth = 460; // Increased to accommodate ammo display
         float rectHeight = 130;
 
-        // --- Padding y líneas ---
+        // --- Padding ---
         float paddingX = rectX + 20;
         float paddingY = rectY + rectHeight - 20;
         float lineSpacing = 35;
 
-        // --- Fondo translúcido ---
+        // --- Background ---
         Gdx.gl.glEnable(Gdx.gl.GL_BLEND);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0, 0, 0, 0.4f));
@@ -42,41 +49,62 @@ public class HUD {
         shapeRenderer.end();
         Gdx.gl.glDisable(Gdx.gl.GL_BLEND);
 
-        // --- Borde blanco ---
+        // --- Border ---
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.WHITE);
         shapeRenderer.rect(rectX, rectY, rectWidth, rectHeight);
         shapeRenderer.end();
 
-        // --- Texto: Health ---
+        // --- Health ---
         batch.begin();
         font.setColor(healthColor);
         font.draw(batch, "Health: " + (int) health, paddingX, paddingY);
 
-        // --- Texto: Weapon with Ammo Information ---
+        // --- Weapon with Ammo Information ---
+        Texture weaponIcon = null;
+        float iconSize = 48;
+        float iconY = paddingY - lineSpacing * 2 - 25;
+        float textOffsetX = 60;
+        String weaponName = player.getCurrentWeaponName();
+        
+        if (weaponName.equalsIgnoreCase("Pistol")) {
+            weaponIcon = pistolIcon;
+            iconSize = 48;
+            textOffsetX = 65;
+        } else if (weaponName.equalsIgnoreCase("Carbine")) {
+            weaponIcon = carbineIcon;
+            iconSize = 70;
+            iconY = paddingY - lineSpacing * 2 - 40;
+            textOffsetX = 85;
+        } else if (weaponName.equalsIgnoreCase("Shotgun")) {
+            weaponIcon = shotgunIcon;
+            iconSize = 70;
+            iconY = paddingY - lineSpacing * 2 - 55;
+            textOffsetX = 85;
+        }
+        batch.draw(weaponIcon, paddingX, iconY, iconSize, iconSize);
+        
         font.setColor(Color.WHITE);
-        // Get the weapon name, current ammo and mag capacity
-        String weaponDisplay = "Weapon: " + player.getCurrentWeaponName();
-        
-        // Add ammo information: totalAmmoCount/magazineSize
-        int totalAmmoCount = player.getTotalAmmoCount();
+        int currentAmmo = player.getCurrentAmmo();
         int magazineSize = player.getMagazineSize();
-        weaponDisplay += "  " + totalAmmoCount + "/" + magazineSize;
-        
-        // Add magazine indicators using "M" characters
+        String ammoInfo = currentAmmo + "/" + magazineSize;
+        // Add ammo information: totalAmmoCount/magazineSize
+        //int totalAmmoCount = player.getTotalAmmoCount();
+        //int magazineSize = player.getMagazineSize();
+        //weaponDisplay += "  " + totalAmmoCount + "/" + magazineSize;
+
         int totalMags = player.getTotalMags();
         if (totalMags > 0) {
-            weaponDisplay += "  ";
+            ammoInfo += "   ";
             for (int i = 0; i < totalMags; i++) {
-                weaponDisplay += "M ";
+                ammoInfo += "M ";
             }
         }
         
-        // Display the weapon info with ammo count
-        font.draw(batch, weaponDisplay, paddingX, paddingY - lineSpacing * 2);
+        font.draw(batch, ammoInfo, paddingX + textOffsetX, paddingY - lineSpacing * 2);
         batch.end();
 
-        // --- Barra de vida ---
+        // --- Life bar ---
         float barX = paddingX;
         float barY = paddingY - lineSpacing - 8;
         float barWidth = 250;

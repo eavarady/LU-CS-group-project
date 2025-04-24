@@ -21,6 +21,7 @@ public class SplashScreen implements Screen {
     public void show() {
         batch = new SpriteBatch();
         image = new Texture("STORMBREAKER_splash_v1.png");
+        game.menuMusic.play();
     }
 
     @Override
