@@ -455,8 +455,16 @@ public class MainGameplayScreen extends LevelScreen {
                 bullets.removeIndex(i); // Remove bullet if it goes off-screen
             }
         }
+        shapeRenderer.end();
+
+        // Check for player death and reset screen if needed
+        if (player.getHealth() <= 0) {
+            game.setScreen(new MainGameplayScreen(game));
+            return;
+        }
 
         // render grenades
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.BLACK);
         for (int i = grenades.size - 1; i >= 0; i--) {
             Grenade g = grenades.get(i);
