@@ -46,7 +46,10 @@ public abstract class Weapon {
      * Attempts to fire the weapon
      * @return The created bullet if fired, null otherwise
      */
-    public abstract Bullet fire(float x, float y, float dirX, float dirY, Character owner);
+    public Bullet fire(float x, float y, float dirX, float dirY, Character owner) {
+        // Default implementation calls the more complex version with a spread multiplier of 1.0f
+        return fire(x, y, dirX, dirY, owner, 1.0f);
+    }
     
     /**
      * Attempts to fire the weapon with spread multiplier

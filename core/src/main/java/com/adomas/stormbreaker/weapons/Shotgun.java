@@ -24,34 +24,7 @@ public class Shotgun extends Weapon {
     }
     
     @Override
-    public Bullet fire(float x, float y, float dirX, float dirY, Character owner) {
-        if (!canFire()) {
-            return null;
-        }
-
-        // Reset cooldown
-        timeSinceLastShot = 0f;
-        
-        // Use round in chamber first if it exists
-        if (hasRoundInChamber) {
-            hasRoundInChamber = false;
-        } else {
-            // Otherwise use from magazine
-            currentAmmo--;
-        }
-        
-        // Create a single bullet for now (center pellet)
-        Bullet bullet = new Bullet(x, y, dirX, dirY, owner);
-        bullet.setDamage(damage);
-
-        playFireSound();
-        
-        return bullet;
-    }
-    
-    @Override
     public Bullet fire(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier) {
-        // For Shotgun, fire() with spreadMultiplier will just fire a single pellet with spread
         if (!canFire()) {
             return null;
         }
@@ -81,38 +54,8 @@ public class Shotgun extends Weapon {
     }
     
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, Character owner) {
-        if (!canFire()) {
-            return null;
-        }
-        
-        // Reset cooldown
-        timeSinceLastShot = 0f;
-        
-        // Use round in chamber first if it exists
-        if (hasRoundInChamber) {
-            hasRoundInChamber = false;
-        } else {
-            // Otherwise use from magazine
-            currentAmmo--;
-        }
-        
-        Array<Bullet> pellets = new Array<>();
-        
-        // Create multiple pellets in a spread pattern
-        for (int i = 0; i < pelletCount; i++) {
-            // Calculate spread for this pellet
-            float pelletSpread = MathUtils.random(-spreadAngle, spreadAngle);
-            float radians = pelletSpread * MathUtils.degreesToRadians;
-            float spreadX = dirX * (float) Math.cos(radians) - dirY * (float) Math.sin(radians);
-            float spreadY = dirX * (float) Math.sin(radians) + dirY * (float) Math.cos(radians);
-            
-            // Create the pellet
-            Bullet pellet = new Bullet(x, y, spreadX, spreadY, owner);
-            pellet.setDamage(damage);
-            pellets.add(pellet);
-        }
-        playFireSound();
-        return pellets;
+        // Call the version with spread multiplier using default value of 1.0f
+        return fireShotgun(x, y, dirX, dirY, owner, 1.0f);
     }
     
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY, Character owner, float spreadMultiplier) {
