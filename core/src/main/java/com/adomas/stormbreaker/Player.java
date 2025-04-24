@@ -44,6 +44,9 @@ public class Player extends Character implements Disposable {
     private boolean isBleeding = false;
     private float bleedTimer = 0f;
     private static final float BLEED_DAMAGE_PER_SECOND = 1f;
+    private float stopBleedTimer = 0f;
+    private static final float STOP_BLEED_HOLD_TIME = 5f;
+    private static final float BLEED_HEAL_AMOUNT = 20f;
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
@@ -171,6 +174,17 @@ public class Player extends Character implements Disposable {
                 health -= BLEED_DAMAGE_PER_SECOND;
                 bleedTimer = 0f;
                 if (health < 0) health = 0;
+            }
+            // Handle stopping bleed with F key
+            if (Gdx.input.isKeyPressed(Input.Keys.F)) {
+                stopBleedTimer += delta;
+                if (stopBleedTimer >= STOP_BLEED_HOLD_TIME) {
+                    isBleeding = false;
+                    stopBleedTimer = 0f;
+                    health = Math.min(health + BLEED_HEAL_AMOUNT, 100f);
+                }
+            } else {
+                stopBleedTimer = 0f;
             }
         }
     }
