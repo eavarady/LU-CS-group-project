@@ -38,6 +38,8 @@ public class Player extends Character implements Disposable {
     private float reloadTimer = 0f;
     private float reloadTime = 1.5f; // Time in seconds to complete a reload
 
+    private Sound switchWeaponSound;
+
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
@@ -45,6 +47,7 @@ public class Player extends Character implements Disposable {
         this.playerRadius = texture.getWidth() / 2f;
 
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
+        switchWeaponSound = Gdx.audio.newSound(Gdx.files.internal("weapon_switch.wav"));
         
         // Initialize weapons
         weapons.add(new Pistol());
@@ -279,6 +282,7 @@ public class Player extends Character implements Disposable {
         int nextIndex = (currentIndex + 1) % weapons.size;
         currentWeapon = weapons.get(nextIndex);
         this.texture = weaponTextures.get(currentWeapon.getName());
+        switchWeaponSound.play(1.0f);
     } 
     
     public void switchToPreviousWeapon() {
@@ -286,6 +290,7 @@ public class Player extends Character implements Disposable {
         int prevIndex = (currentIndex - 1 + weapons.size) % weapons.size;
         currentWeapon = weapons.get(prevIndex);
         this.texture = weaponTextures.get(currentWeapon.getName());
+        switchWeaponSound.play(1.0f);
     }
 
     @Override

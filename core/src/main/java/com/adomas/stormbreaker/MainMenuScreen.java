@@ -2,12 +2,13 @@ package com.adomas.stormbreaker;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -27,6 +28,8 @@ public class MainMenuScreen implements Screen {
     private Texture backgroundTexture;
     private Texture playTexture;
     private Texture exitTexture;
+    private Sound clickSound;
+
 
     public MainMenuScreen(StormbreakerGame game) {
         this.game = game;
@@ -53,7 +56,9 @@ public class MainMenuScreen implements Screen {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
                 game.setScreen(new MainGameplayScreen(game));
+                game.menuMusic.stop();
                 dispose();
             }
         });
@@ -61,6 +66,8 @@ public class MainMenuScreen implements Screen {
         quitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
+                game.menuMusic.stop();
                 Gdx.app.exit(); 
             }
         });
@@ -85,6 +92,8 @@ public class MainMenuScreen implements Screen {
 
         table.setTouchable(Touchable.childrenOnly); // Restrict inputs to the buttons only
         stage.addActor(table);
+
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click_button.mp3"));
     }
 // Method to create the tint effect
     private ImageButton createHoverButton(Texture texture) {
