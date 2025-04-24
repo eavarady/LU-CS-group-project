@@ -1,8 +1,8 @@
 package com.adomas.stormbreaker.lwjgl3;
 
-import com.adomas.stormbreaker.StormbreakerGame;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.stormbreaker.StormbreakerGame;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
