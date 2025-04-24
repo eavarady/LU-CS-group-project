@@ -468,10 +468,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getMaxMagsCapacity();
     }
 
-    /**
-     * Applies damage to the player using a probabilistic damage model
-     * @param baseDamage The base damage value
-     */
+     //Applies damage to the player using a probabilistic damage model
     public void takeDamage(int baseDamage) {
         DamageModel.HitResult hit = DamageModel.getHitResult();
         System.out.println("BodyPart Hit: " + hit.part);

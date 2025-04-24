@@ -85,7 +85,8 @@ public class HUD {
         batch.draw(weaponIcon, paddingX, iconY, iconSize, iconSize);
         
         font.setColor(Color.WHITE);
-        int currentAmmo = player.getCurrentAmmo();
+        //int currentAmmo = player.getCurrentAmmo();
+        int currentAmmo = player.getTotalAmmoCount();
         int magazineSize = player.getMagazineSize();
         String ammoInfo = currentAmmo + "/" + magazineSize;
         // Add ammo information: totalAmmoCount/magazineSize
