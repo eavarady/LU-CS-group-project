@@ -1,13 +1,13 @@
 package com.stormbreaker;
 
-import com.stormbreaker.tools.AStarPathfinder;
-import com.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.stormbreaker.tools.AStarPathfinder;
+import com.stormbreaker.tools.CollisionRectangle;
 
 public class Enemy extends NPC {
 
@@ -117,9 +117,9 @@ public class Enemy extends NPC {
     public void update(float delta) {
         if (dead) {
             timeSinceDeath += delta;
-            if (timeSinceDeath >= 5f) {
-                disposeAfterDeath = true;
-            }
+            // if (timeSinceDeath >= 5f) {
+            //     disposeAfterDeath = true;
+            // }
         }
     }
 
@@ -129,9 +129,9 @@ public class Enemy extends NPC {
     	// Animate death and dispose after 5 seconds
     	if (dead && !disposeAfterDeath) {
     	    deathElapsedTime += delta;
-    	    if (deathElapsedTime >= deathFrameDuration * deathFrames.length) {
-    	        disposeAfterDeath = true;
-    	    }
+    	    // if (deathElapsedTime >= deathFrameDuration * deathFrames.length) {
+    	    //     disposeAfterDeath = true;
+    	    // }
     	}
 
         if (dead) return;

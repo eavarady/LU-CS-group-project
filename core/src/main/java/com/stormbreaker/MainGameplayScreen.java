@@ -1,12 +1,7 @@
 package com.stormbreaker;
 
 import java.util.Iterator;
-import com.stormbreaker.tools.AStarPathfinder;
-import com.stormbreaker.tools.CollisionRectangle;
-import com.stormbreaker.tools.MapManager;
-import com.stormbreaker.weapons.Carbine;
-import com.stormbreaker.weapons.Shotgun;
-import com.stormbreaker.weapons.Weapon;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
@@ -27,6 +22,12 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.stormbreaker.tools.AStarPathfinder;
+import com.stormbreaker.tools.CollisionRectangle;
+import com.stormbreaker.tools.MapManager;
+import com.stormbreaker.weapons.Carbine;
+import com.stormbreaker.weapons.Shotgun;
+import com.stormbreaker.weapons.Weapon;
 
 public class MainGameplayScreen extends LevelScreen {
 
@@ -494,25 +495,25 @@ public class MainGameplayScreen extends LevelScreen {
         // shapeRenderer.rect(playerRect.getX(), playerRect.getY(), playerRect.getWidth(), playerRect.getHeight());
         // shapeRenderer.end();
         // Draw enemy collision rectangles
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.BLUE);
-        for (Enemy e : enemies) {
-            CollisionRectangle enemyRect = e.getCollisionRectangle();
-            shapeRenderer.rect(enemyRect.getX(), enemyRect.getY(), enemyRect.getWidth(), enemyRect.getHeight());
-        }
-        shapeRenderer.end();
-        // Draw enemy vision cones
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.YELLOW);
-        for (Enemy e : enemies) {
-            float visionDistance = e.getVisionDistance();
-            float visionAngle = e.getVisionAngle();
-            float angle = e.getRotation() * MathUtils.degreesToRadians;
-            float x = e.getX();
-            float y = e.getY();
-            shapeRenderer.arc(x, y, visionDistance, -visionAngle / 2f + angle * MathUtils.radiansToDegrees, visionAngle);
-        }
-        shapeRenderer.end();
+        // shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        // shapeRenderer.setColor(Color.BLUE);
+        // for (Enemy e : enemies) {
+        //     CollisionRectangle enemyRect = e.getCollisionRectangle();
+        //     shapeRenderer.rect(enemyRect.getX(), enemyRect.getY(), enemyRect.getWidth(), enemyRect.getHeight());
+        // }
+        // shapeRenderer.end();
+        // // Draw enemy vision cones
+        // shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        // shapeRenderer.setColor(Color.YELLOW);
+        // for (Enemy e : enemies) {
+        //     float visionDistance = e.getVisionDistance();
+        //     float visionAngle = e.getVisionAngle();
+        //     float angle = e.getRotation() * MathUtils.degreesToRadians;
+        //     float x = e.getX();
+        //     float y = e.getY();
+        //     shapeRenderer.arc(x, y, visionDistance, -visionAngle / 2f + angle * MathUtils.radiansToDegrees, visionAngle);
+        // }
+        // shapeRenderer.end();
         //////////////
 
 
