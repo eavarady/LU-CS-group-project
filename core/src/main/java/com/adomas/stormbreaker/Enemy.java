@@ -2,18 +2,22 @@ package com.adomas.stormbreaker;
 
 import com.adomas.stormbreaker.tools.AStarPathfinder;
 import com.adomas.stormbreaker.tools.CollisionRectangle;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 
 
 
 public class Enemy extends NPC {
+
+    public enum EnemyType {
+        AGGRESSIVE,
+        PASSIVE
+    }
+    private EnemyType type = EnemyType.AGGRESSIVE;
 
     private int health = 100;
     private Texture[] deathFrames; // array for death frames textures
@@ -45,6 +49,7 @@ public class Enemy extends NPC {
     private float currentRotationSpeed = rotationSpeed;
     // Target rotation
     private float targetRotation = 0f;
+    private Float soundTargetRotation = null;
     // Track last known player position
     private Vector2 lastKnownPlayerPos = null;
     private boolean playerRecentlySeen = false;
@@ -95,6 +100,11 @@ public class Enemy extends NPC {
 
     }
 
+    public Enemy(float x, float y, float speed, String texturePath, EnemyType type) {
+        this(x, y, speed, texturePath);
+        this.type = type;
+    }
+
     public float getX() {
         return x;
     }
@@ -131,38 +141,93 @@ public class Enemy extends NPC {
         for (SoundEvent se : soundEvents) {
             float dist = Vector2.dst(x, y, se.getPosition().x, se.getPosition().y);
             if (dist <= se.getCurrentRadius()) {
-                // No line-of-sight check for sound anymore
-                // --- LOS check commented out below in case we want it back ---
-                /*
-                boolean blocked = false;
-                float dx = se.getPosition().x - x;
-                float dy = se.getPosition().y - y;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                int steps = (int) (distance / 10f);
-                for (int i = 1; i <= steps; i++) {
-                    float t = i / (float) steps;
-                    float checkX = x + dx * t;
-                    float checkY = y + dy * t;
-                    for (CollisionRectangle rect : mapCollisions) {
-                        if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
-                            rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
-                            blocked = true;
-                            break;
-                        }
-                    }
-                    if (blocked) break;
+                if (type == EnemyType.PASSIVE) {
+                    float dx = se.getPosition().x - x;
+                    float dy = se.getPosition().y - y;
+                    float angleToSound = (float) Math.toDegrees(Math.atan2(dy, dx));
+                    this.soundTargetRotation = angleToSound;
+                    if (state == EnemyState.UNAWARE) state = EnemyState.CAUTIOUS;
+                    wantsToShoot = true;
+                    break;
+                } else {
+                    // AGGRESSIVE (default) logic
+                    lastKnownPlayerPos = new Vector2(se.getPosition());
+                    playerRecentlySeen = false;
+                    state = EnemyState.CAUTIOUS;
+                    currentPath = null;
+                    pathIndex = 0;
+                    currentRotationSpeed = fastRotationSpeed;
+                    break;
                 }
-                if (!blocked) {
-                */
-                lastKnownPlayerPos = new Vector2(se.getPosition());
-                playerRecentlySeen = false;
-                state = EnemyState.CAUTIOUS;
-                currentPath = null;
-                pathIndex = 0;
-                currentRotationSpeed = fastRotationSpeed; // Turn fast towards sound
-                break; // Only react to the first valid sound event
-                //}
             }
+        }
+
+        if (type == EnemyType.PASSIVE) {
+            // --- PASSIVE VISION LOGIC ---
+            if (state == EnemyState.CAUTIOUS && soundTargetRotation != null) {
+                smoothRotateTowards(soundTargetRotation, delta);
+                // Optionally, clear soundTargetRotation if close enough
+                float angleDiff = Math.abs(((rotation - soundTargetRotation + 540) % 360) - 180);
+                if (angleDiff < 2f) {
+                    soundTargetRotation = null;
+                }
+            }
+            float dx = player.getX() - this.x;
+            float dy = player.getY() - this.y;
+            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+            boolean playerVisible = false;
+            if (distance <= visionDistance) {
+                float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
+                float enemyFacingAngle = rotation;
+                angleToPlayer = (angleToPlayer + 360) % 360;
+                enemyFacingAngle = (enemyFacingAngle + 360) % 360;
+                float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
+                if (angleDifference > 180) angleDifference = 360 - angleDifference;
+                if (angleDifference <= visionAngle / 2f) {
+                    // Line-of-sight check
+                    int steps = (int) (distance / 10f);
+                    boolean blocked = false;
+                    for (int i = 1; i <= steps; i++) {
+                        float t = i / (float) steps;
+                        float checkX = this.x + dx * t;
+                        float checkY = this.y + dy * t;
+                        for (CollisionRectangle rect : mapCollisions) {
+                            if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                                rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                                blocked = true;
+                                break;
+                            }
+                        }
+                        if (blocked) break;
+                    }
+                    if (!blocked) {
+                        playerVisible = true;
+                    }
+                }
+            }
+            if (playerVisible) {
+                state = EnemyState.ALERTED;
+                // Turn and shoot at player
+                float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
+                this.targetRotation = angleToPlayer;
+                smoothRotateTowards(targetRotation, delta);
+                timeSinceLastShot += delta;
+                if (timeSinceLastShot >= shotCooldown) {
+                    wantsToShoot = true;
+                    float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+                    shootDirX = dx / normShoot;
+                    shootDirY = dy / normShoot;
+                    timeSinceLastShot = 0f;
+                } else {
+                    wantsToShoot = false;
+                }
+            } else {
+                if (state == EnemyState.ALERTED) {
+                    state = EnemyState.CAUTIOUS;
+                }
+                wantsToShoot = false;
+            }
+            return;
         }
 
         // VISION/AI STATE LOGIC
@@ -486,5 +551,13 @@ public class Enemy extends NPC {
 
     public boolean isDisposed() {
         return disposeAfterDeath;
+    }
+
+    public EnemyType getType() {
+        return type;
+    }
+
+    public void setType(EnemyType type) {
+        this.type = type;
     }
 }
