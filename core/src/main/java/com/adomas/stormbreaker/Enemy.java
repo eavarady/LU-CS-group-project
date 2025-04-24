@@ -5,10 +5,22 @@ import com.adomas.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
+
+
 
 public class Enemy extends NPC {
 
     private int health = 100;
+    private Texture[] deathFrames; // array for death frames textures
+    private float deathElapsedTime = 0f;
+    private float deathFrameDuration = 0.2f; // seconds per frame
+ // Sound to play when the enemy dies
+    private Sound deathSound;
     private boolean dead = false;
     private final float enemyRadius;
     // the radius of the enemy for player detection, 200 degrees in front of the enemy
@@ -51,6 +63,11 @@ public class Enemy extends NPC {
     }
 
     private EnemyState state = EnemyState.UNAWARE;
+    
+    //death animation variables 
+    private float timeSinceDeath = 0f;
+    private boolean disposeAfterDeath = false;
+
 
     // For dynamic unstuck logic
     private Vector2 lastPosition = null;
@@ -62,6 +79,20 @@ public class Enemy extends NPC {
         super(x, y, speed, texturePath);
         this.enemyRadius = texture.getWidth() / 2f;
         this.collisionRectangle = new CollisionRectangle(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f), texture.getWidth() / 2, texture.getHeight() / 2);
+     // Load death animation frames
+        deathFrames = new Texture[] {
+        	
+            new Texture(Gdx.files.internal("death1final.png")),
+            new Texture(Gdx.files.internal("death2final.png")),
+            new Texture(Gdx.files.internal("death3final.png")),
+            new Texture(Gdx.files.internal("death4final.png"))
+            
+        };
+
+        
+     // Load death sound from assets
+        deathSound = Gdx.audio.newSound(Gdx.files.internal("deathaudio.ogg"));
+
     }
 
     public float getX() {
@@ -72,12 +103,28 @@ public class Enemy extends NPC {
         return y;
     }
     //Empty update method for the enemy class to satisfy the abstract method in the NPC class
+    
     @Override
     public void update(float delta) {
+        if (dead) {
+            timeSinceDeath += delta;
+            if (timeSinceDeath >= 5f) {
+                disposeAfterDeath = true;
+            }
+        }
     }
+
     
     // Unified update method: handles both vision and sound detection
     public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions, Array<SoundEvent> soundEvents) {
+    	// Animate death and dispose after 5 seconds
+    	if (dead && !disposeAfterDeath) {
+    	    deathElapsedTime += delta;
+    	    if (deathElapsedTime >= deathFrameDuration * deathFrames.length) {
+    	        disposeAfterDeath = true;
+    	    }
+    	}
+
         if (dead) return;
 
         // --- SOUND DETECTION ---
@@ -342,22 +389,39 @@ public class Enemy extends NPC {
         // Here, we just set the target, update() will rotate smoothly
     }
 
+    @Override
     public void render(SpriteBatch batch) {
         if (!dead) {
             super.render(batch);
+        } else if (!disposeAfterDeath) {
+            // Determine current frame based on deathElapsedTime
+            int frame = (int) (deathElapsedTime / deathFrameDuration);
+            if (frame >= deathFrames.length) frame = deathFrames.length - 1; // Clamp to last frame
+
+            Texture currentFrame = deathFrames[frame];
+            float drawWidth = currentFrame.getWidth() * 0.1f;   
+            float drawHeight = currentFrame.getHeight() * 0.1f;
+
+            batch.draw(
+                currentFrame,
+                x - drawWidth / 2f,
+                y - drawHeight / 2f,
+                drawWidth,
+                drawHeight
+            );
         }
     }
 
-    public void takeDamage(int baseDamage) {
+
+
+    public void takeDamage(int amount) {
         if (!dead) {
-            DamageModel.HitResult hit = DamageModel.getHitResult();
-            System.out.println("BodyPart Hit: " + hit.part);
-            int finalDamage = Math.round(baseDamage * hit.multiplier);
-            health -= finalDamage;
-            // Optionally: handle bleed effect here using hit.bleedChance
-            // Example: if (Math.random() < hit.bleedChance) { /* apply bleed */ }
+            health -= amount;
             if (health <= 0) {
                 dead = true;
+             // Play death sound once
+                deathSound.play();
+
             }
         }
     }
@@ -418,5 +482,9 @@ public class Enemy extends NPC {
 
     public EnemyState getState() {
         return state;
+    }
+
+    public boolean isDisposed() {
+        return disposeAfterDeath;
     }
 }
