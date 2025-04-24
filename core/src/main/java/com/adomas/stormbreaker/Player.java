@@ -41,6 +41,10 @@ public class Player extends Character implements Disposable {
 
     private Sound switchWeaponSound;
 
+    private boolean isBleeding = false;
+    private float bleedTimer = 0f;
+    private static final float BLEED_DAMAGE_PER_SECOND = 1f;
+
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
@@ -157,6 +161,16 @@ public class Player extends Character implements Disposable {
             if (reloadTimer >= reloadTime) {
                 // Reload complete
                 finishReload();
+            }
+        }
+
+        // Bleeding mechanic
+        if (isBleeding) {
+            bleedTimer += delta;
+            if (bleedTimer >= 1f) {
+                health -= BLEED_DAMAGE_PER_SECOND;
+                bleedTimer = 0f;
+                if (health < 0) health = 0;
             }
         }
     }
@@ -416,8 +430,11 @@ public class Player extends Character implements Disposable {
         System.out.println("BodyPart Hit: " + hit.part);
         int finalDamage = Math.round(baseDamage * hit.multiplier);
         health -= finalDamage;
-        // Optionally: handle bleed effect here using hit.bleedChance
-        // Example: if (Math.random() < hit.bleedChance) { /* apply bleed */ }
+        // Bleed effect
+        if (!isBleeding && Math.random() < hit.bleedChance) {
+            isBleeding = true;
+            bleedTimer = 0f;
+        }
         if (health < 0) health = 0;
     }
 }
