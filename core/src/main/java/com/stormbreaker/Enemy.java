@@ -653,6 +653,10 @@ public class Enemy extends NPC {
     public void takeDamage(int amount) {
         if (!dead) {
             health -= amount;
+            // AGGRESSIVE: 10% chance to become BOMBER if health <= 25
+            if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
+                type = EnemyType.BOMBER;
+            }
             if (health <= 0) {
                 dead = true;
                 // Play death sound once
