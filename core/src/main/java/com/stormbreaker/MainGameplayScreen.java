@@ -85,11 +85,12 @@ public class MainGameplayScreen extends LevelScreen {
         player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
 
         // Add a few static enemies
-        enemies.add(new Enemy(400, 300, 80, "enemy_blob.png",Enemy.EnemyType.PASSIVE)); // AGGRESSIVE (default)
+        enemies.add(new Enemy(400, 300, 80, "enemy_blob.png",Enemy.EnemyType.PASSIVE)); // PASSIVE
         enemies.add(new Enemy(600, 400, 80, "enemy_blob.png", Enemy.EnemyType.PASSIVE)); // PASSIVE
         enemies.add(new Enemy(800, 200, 80, "enemy_blob.png")); // AGGRESSIVE (default)
         enemies.add(new Enemy(800, 500, 80, "enemy_blob.png")); // AGGRESSIVE (default)
-
+        enemies.add(new Enemy(100, 500, 80, "enemy_blob.png", Enemy.EnemyType.BOMBER)); // BOMBER
+        enemies.add(new Enemy(200, 300, 80, "enemy_blob.png", Enemy.EnemyType.BOMBER)); // BOMBER
         // --- Ensure all enemies have a pathfinder for A* navigation ---
         float cellSize = 32f; // You can adjust this for pathfinding granularity
         // Add 1 pixel to the enemy buffer to ensure a 1-pixel standoff from obstacles
@@ -103,6 +104,8 @@ public class MainGameplayScreen extends LevelScreen {
         );
         for (Enemy e : enemies) {
             e.setPathfinder(pathfinder);
+            // Set grenade explosion callback for BOMBERs
+            e.setLevelScreenListener(this::createGrenadeExplosion);
         }
 
         // Center camera on the map

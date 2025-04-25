@@ -13,7 +13,8 @@ public class Enemy extends NPC {
 
     public enum EnemyType {
         AGGRESSIVE,
-        PASSIVE
+        PASSIVE,
+        BOMBER
     }
     private EnemyType type = EnemyType.AGGRESSIVE;
 
@@ -82,6 +83,15 @@ public class Enemy extends NPC {
     private float stuckTime = 0f;
     private static final float STUCK_THRESHOLD = 0.5f; // seconds
     private static final float MIN_MOVE_DIST = 2f; // minimum distance considered as movement
+
+    private boolean hasExploded = false;
+
+    // Add this interface for grenade explosions
+    public interface LevelScreenListener {
+        void createGrenadeExplosion(float x, float y);
+    }
+
+    private LevelScreenListener levelScreenListener;
 
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
@@ -248,6 +258,141 @@ public class Enemy extends NPC {
                 }
                 wantsToShoot = false;
             }
+            return;
+        }
+
+        // BOMBER logic: chase like AGGRESSIVE, but no shooting, explodes on proximity
+        if (type == EnemyType.BOMBER) {
+            // Increase speed by 50%
+            float bomberSpeed = speed * 1.5f;
+            // Calculate vector to player
+            float dx = player.getX() - this.x;
+            float dy = player.getY() - this.y;
+            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+            boolean playerVisible = false;
+            if (distance <= visionDistance) {
+                float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
+                float enemyFacingAngle = rotation;
+                angleToPlayer = (angleToPlayer + 360) % 360;
+                enemyFacingAngle = (enemyFacingAngle + 360) % 360;
+                float angleDifference = Math.abs(angleToPlayer - enemyFacingAngle);
+                if (angleDifference > 180) angleDifference = 360 - angleDifference;
+                if (angleDifference <= visionAngle / 2f) {
+                    // Line-of-sight check (step-based raycast)
+                    int steps = (int) (distance / 10f);
+                    boolean blocked = false;
+                    for (int i = 1; i <= steps; i++) {
+                        float t = i / (float) steps;
+                        float checkX = this.x + dx * t;
+                        float checkY = this.y + dy * t;
+                        for (CollisionRectangle rect : mapCollisions) {
+                            if (rect.getX() <= checkX && checkX <= rect.getX() + rect.getWidth() &&
+                                rect.getY() <= checkY && checkY <= rect.getY() + rect.getHeight()) {
+                                blocked = true;
+                                break;
+                            }
+                        }
+                        if (blocked) break;
+                    }
+                    if (!blocked) {
+                        playerVisible = true;
+                    }
+                }
+            }
+            if (playerVisible) {
+                lastKnownPlayerPos = new Vector2(player.getX(), player.getY());
+                currentPath = null;
+                pathIndex = 0;
+                // Move directly toward player
+                float moveSpeed = bomberSpeed * delta;
+                float norm = (float) Math.sqrt(dx * dx + dy * dy);
+                if (norm > 1e-3) {
+                    float moveX = (dx / norm) * moveSpeed;
+                    float moveY = (dy / norm) * moveSpeed;
+                    collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+                    boolean collides = false;
+                    for (CollisionRectangle rect : mapCollisions) {
+                        if (collisionRectangle.collisionCheck(rect)) {
+                            collides = true;
+                            break;
+                        }
+                    }
+                    if (!collides) {
+                        x += moveX;
+                        y += moveY;
+                        state = EnemyState.MOVING;
+                    } else {
+                        collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+                    }
+                }
+                // Set target rotation to match the angle to player (in degrees)
+                targetRotation = (float) Math.toDegrees(Math.atan2(dy, dx));
+                smoothRotateTowards(targetRotation, delta);
+                // If close enough, explode
+                if (!hasExploded && distance < 40f) {
+                    hasExploded = true;
+                    dead = true;
+                    if (deathSound != null) deathSound.play();
+                    // Use grenade explosion logic
+                    if (levelScreenListener != null) {
+                        levelScreenListener.createGrenadeExplosion(x, y);
+                    }
+                    return;
+                }
+            } else if (lastKnownPlayerPos != null) {
+                // Pathfind to last known position
+                pathRecalcCooldown -= delta;
+                if (pathfinder != null && (currentPath == null || pathIndex >= currentPath.size || pathRecalcCooldown <= 0f)) {
+                    currentPath = pathfinder.findPath(new Vector2(x, y), lastKnownPlayerPos);
+                    pathIndex = 0;
+                    pathRecalcCooldown = PATH_RECALC_INTERVAL;
+                }
+                if (currentPath != null && pathIndex < currentPath.size) {
+                    Vector2 target = currentPath.get(pathIndex);
+                    float toTargetX = target.x - x;
+                    float toTargetY = target.y - y;
+                    float distToTarget = (float)Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY);
+                    if (distToTarget > ARRIVAL_THRESHOLD) {
+                        float moveSpeed = bomberSpeed * delta;
+                        float norm = (float) Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY);
+                        if (norm > 1e-3) {
+                            float moveX = (toTargetX / norm) * moveSpeed;
+                            float moveY = (toTargetY / norm) * moveSpeed;
+                            collisionRectangle.move(x + moveX - (texture.getWidth() / 4f), y + moveY - (texture.getHeight() / 4f));
+                            boolean collides = false;
+                            for (CollisionRectangle rect : mapCollisions) {
+                                if (collisionRectangle.collisionCheck(rect)) {
+                                    collides = true;
+                                    break;
+                                }
+                            }
+                            if (!collides) {
+                                x += moveX;
+                                y += moveY;
+                                state = EnemyState.MOVING;
+                            } else {
+                                collisionRectangle.move(x - (texture.getWidth() / 4f), y - (texture.getHeight() / 4f));
+                            }
+                        }
+                        // Rotate towards target
+                        float angleToTarget = (float)Math.toDegrees(Math.atan2(toTargetY, toTargetX));
+                        targetRotation = angleToTarget;
+                        smoothRotateTowards(targetRotation, delta);
+                    } else {
+                        pathIndex++;
+                        state = EnemyState.CAUTIOUS;
+                    }
+                } else {
+                    // Arrived at last known position, stop searching
+                    lastKnownPlayerPos = null;
+                    currentPath = null;
+                    pathIndex = 0;
+                    state = EnemyState.CAUTIOUS;
+                }
+            } else {
+                state = EnemyState.UNAWARE;
+            }
+            wantsToShoot = false; // Never shoot
             return;
         }
 
@@ -505,16 +650,20 @@ public class Enemy extends NPC {
         }
     }
 
-
-
     public void takeDamage(int amount) {
         if (!dead) {
             health -= amount;
             if (health <= 0) {
                 dead = true;
-             // Play death sound once
+                // Play death sound once
                 deathSound.play();
-
+                // BOMBER: 25% chance to detonate on death
+                if (type == EnemyType.BOMBER && !hasExploded && Math.random() < 0.25) {
+                    hasExploded = true;
+                    if (levelScreenListener != null) {
+                        levelScreenListener.createGrenadeExplosion(x, y);
+                    }
+                }
             }
         }
     }
@@ -587,5 +736,9 @@ public class Enemy extends NPC {
 
     public void setType(EnemyType type) {
         this.type = type;
+    }
+
+    public void setLevelScreenListener(LevelScreenListener listener) {
+        this.levelScreenListener = listener;
     }
 }
