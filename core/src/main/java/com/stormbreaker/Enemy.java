@@ -32,6 +32,10 @@ public class Enemy extends NPC {
     private final float shotCooldown = 0.15f;
     // Time since last shot
     private float timeSinceLastShot = 0f;
+    // Reaction timer for shooting delay
+    private float reactionTimer = 0f;
+    // Minimum time player must be visible before shooting
+    private static final float REACTION_TIME = 0.5f;
     // Collision rectangle for the enemy
     private final CollisionRectangle collisionRectangle;
     // Vision distance for the enemy
@@ -219,17 +223,25 @@ public class Enemy extends NPC {
                 float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
                 this.targetRotation = angleToPlayer;
                 smoothRotateTowards(targetRotation, delta);
-                timeSinceLastShot += delta;
-                if (timeSinceLastShot >= shotCooldown) {
-                    wantsToShoot = true;
-                    float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
-                    shootDirX = dx / normShoot;
-                    shootDirY = dy / normShoot;
-                    timeSinceLastShot = 0f;
+                // Reaction timer logic
+                reactionTimer += delta;
+                if (reactionTimer >= REACTION_TIME) {
+                    timeSinceLastShot += delta;
+                    if (timeSinceLastShot >= shotCooldown) {
+                        wantsToShoot = true;
+                        float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+                        shootDirX = dx / normShoot;
+                        shootDirY = dy / normShoot;
+                        timeSinceLastShot = 0f;
+                    } else {
+                        wantsToShoot = false;
+                    }
                 } else {
                     wantsToShoot = false;
                 }
             } else {
+                // Reset reaction timer if player not visible
+                reactionTimer = 0f;
                 if (state == EnemyState.ALERTED) {
                     state = EnemyState.CAUTIOUS;
                     checkedAggressiveConversion = false; // Reset when losing sight
@@ -355,13 +367,19 @@ public class Enemy extends NPC {
                     // Set target rotation to match the angle to player (in degrees)
                     targetRotation = angleToPlayer;
                     smoothRotateTowards(targetRotation, delta);
-                    timeSinceLastShot += delta;
-                    if (timeSinceLastShot >= shotCooldown) {
-                        wantsToShoot = true;
-                        float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
-                        shootDirX = dx / normShoot;
-                        shootDirY = dy / normShoot;
-                        timeSinceLastShot = 0f;
+                    // Reaction timer logic
+                    reactionTimer += delta;
+                    if (reactionTimer >= REACTION_TIME) {
+                        timeSinceLastShot += delta;
+                        if (timeSinceLastShot >= shotCooldown) {
+                            wantsToShoot = true;
+                            float normShoot = (float)Math.sqrt(dx * dx + dy * dy);
+                            shootDirX = dx / normShoot;
+                            shootDirY = dy / normShoot;
+                            timeSinceLastShot = 0f;
+                        } else {
+                            wantsToShoot = false;
+                        }
                     } else {
                         wantsToShoot = false;
                     }
@@ -370,6 +388,7 @@ public class Enemy extends NPC {
             }
         }
         // If here, player is not visible
+        reactionTimer = 0f;
         wantsToShoot = false;
         // --- FIX: Always investigate lastKnownPlayerPos if set, even if playerRecentlySeen is false ---
         if (lastKnownPlayerPos != null) {
