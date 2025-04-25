@@ -93,6 +93,11 @@ public class Enemy extends NPC {
 
     private LevelScreenListener levelScreenListener;
 
+    // --- SCANNING FIELDS FOR PASSIVE CAUTIOUS ENEMIES ---
+    private float scanTimer = 0f;
+    private float scanInterval = 1.5f; // seconds between scans
+    private Float scanTargetAngle = null;
+
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
         this.enemyRadius = texture.getWidth() / 2f;
@@ -184,6 +189,26 @@ public class Enemy extends NPC {
                 if (angleDiff < 2f) {
                     soundTargetRotation = null;
                 }
+            }
+            // SCANNING LOGIC FOR CAUTIOUS, PASSIVE ENEMIES
+            if (state == EnemyState.CAUTIOUS && soundTargetRotation == null) {
+                scanTimer += delta;
+                if (scanTargetAngle == null || Math.abs(((rotation - scanTargetAngle + 540) % 360) - 180) < 2f) {
+                    // If reached target or no target, wait for interval then pick next scan angle
+                    if (scanTimer >= scanInterval) {
+                        scanTimer = 0f;
+                        // Next scan angle: rotate 90 degrees clockwise
+                        float nextAngle = (rotation + 90f) % 360f;
+                        scanTargetAngle = nextAngle;
+                    }
+                }
+                if (scanTargetAngle != null) {
+                    smoothRotateTowards(scanTargetAngle, delta);
+                }
+            } else {
+                // Reset scan if not in CAUTIOUS state
+                scanTimer = 0f;
+                scanTargetAngle = null;
             }
             float dx = player.getX() - this.x;
             float dy = player.getY() - this.y;
