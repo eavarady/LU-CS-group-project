@@ -10,7 +10,7 @@ public class StormbreakerGame extends Game {
 
     @Override
     public void create() {
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("MusicMenuDef.mp3")); 
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("MusicMenuDef.mp3"));
         menuMusic.setLooping(true); 
         menuMusic.setVolume(1.0f); 
         setScreen(new SplashScreen(this));

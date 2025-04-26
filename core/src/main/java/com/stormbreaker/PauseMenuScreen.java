@@ -78,6 +78,9 @@ public class PauseMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play();
+                if (previousScreen instanceof MainGameplayScreen) {
+                    ((MainGameplayScreen) previousScreen).resumeMusic();
+                }
                 game.setScreen(previousScreen);
                 Gdx.input.setCursorCatched(true);
                 game.menuMusic.stop();
@@ -89,6 +92,9 @@ public class PauseMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play();
+                if (previousScreen instanceof MainGameplayScreen) {
+                    ((MainGameplayScreen) previousScreen).stopMusic();
+                }
                 game.setScreen(new MainGameplayScreen(game));
                 game.menuMusic.stop();
                 dispose(); 
