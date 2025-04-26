@@ -1,6 +1,7 @@
 package com.stormbreaker;
 
 import com.stormbreaker.weapons.Carbine;
+
 import com.stormbreaker.weapons.Pistol;
 import com.stormbreaker.weapons.Shotgun;
 import com.stormbreaker.weapons.Weapon;
@@ -17,6 +18,8 @@ import com.stormbreaker.DamageModel;
 import java.util.Random;
 import java.util.Map;
 import java.util.HashMap;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch; 
+         
 
 public class Player extends Character implements Disposable {
     private OrthographicCamera camera;
@@ -32,6 +35,12 @@ public class Player extends Character implements Disposable {
     private long stepSoundId = -1; // ID for the currently looping sound
     private boolean isWalking = false;
     private Random rand = new Random(); // used to randomize pitch
+  //walking animation
+    private Array<Texture> walkFrames = new Array<>();
+    private float walkFrameTime = 0f;
+    private float walkFrameDuration = 0.1f; // seconds per frame
+    private int currentWalkFrame = 0;
+
     
     private Map<String, Texture> weaponTextures = new HashMap<>();
     
@@ -70,6 +79,12 @@ public class Player extends Character implements Disposable {
         weaponTextures.put("Carbine", new Texture(Gdx.files.internal("player_sprite_carbine.png")));
         weaponTextures.put("Shotgun", new Texture(Gdx.files.internal("player_sprite_shotgun.png")));
         this.texture = weaponTextures.get(currentWeapon.getName());
+        
+         // load walk frames
+        for (int i = 0; i <=7; i++) {
+            walkFrames.add(new Texture(Gdx.files.internal("walk_frame_" + i + ".png")));
+        }
+
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
@@ -130,6 +145,19 @@ public class Player extends Character implements Disposable {
                                 Gdx.input.isKeyPressed(Input.Keys.A) ||
                                 Gdx.input.isKeyPressed(Input.Keys.S) ||
                                 Gdx.input.isKeyPressed(Input.Keys.D);
+        
+     // update walk animation frame
+        if (anyKeyPressed) {
+            walkFrameTime += delta;
+            if (walkFrameTime >= walkFrameDuration) {
+                currentWalkFrame = (currentWalkFrame + 1) % walkFrames.size;
+                walkFrameTime = 0f;
+            }
+        } else {
+            currentWalkFrame = 0;
+            walkFrameTime = 0f;
+        }
+
 
         if (anyKeyPressed && !isWalking && stepSoundId == -1) {
             float volume = 0.5f;
@@ -141,7 +169,8 @@ public class Player extends Character implements Disposable {
             stepSound.stop(stepSoundId);
             stepSoundId = -1;
             isWalking = false;
-        }
+            
+                }
         
         // Update weapon cooldowns
         if (currentWeapon != null) {
@@ -481,4 +510,31 @@ public class Player extends Character implements Disposable {
         }
         if (health < 0) health = 0;
     }
+    
+       // animated render method
+    public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        Texture frame = isWalking ? walkFrames.get(currentWalkFrame) : texture;
+        float drawWidth = frame.getWidth();
+        float drawHeight = frame.getHeight();
+
+        batch.draw(
+            frame,
+            x - drawWidth / 2f,
+            y - drawHeight / 2f,
+            drawWidth / 2f,
+            drawHeight / 2f,
+            drawWidth,
+            drawHeight,
+            1f,
+            1f,
+            rotation,
+            0,
+            0,
+            frame.getWidth(),
+            frame.getHeight(),
+            false,
+            false
+        );
+    }
+
 }
