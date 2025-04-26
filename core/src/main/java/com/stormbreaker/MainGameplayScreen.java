@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -60,6 +61,8 @@ public class MainGameplayScreen extends LevelScreen {
     private final float RETICLE_HAIR_LENGTH = 11.0f; // Fixed length of reticle hairs
 
     private Sound grenadeExplosionSound;
+
+    private Music backgroundMusic;
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -135,7 +138,12 @@ public class MainGameplayScreen extends LevelScreen {
             body.createFixture(fixtureDef);
             shape.dispose();
         }
-        grenadeExplosionSound = Gdx.audio.newSound(Gdx.files.internal("grenade.wav")); // <-- NUEVO
+        grenadeExplosionSound = Gdx.audio.newSound(Gdx.files.internal("grenade.wav"));
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("backgroundmusic.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setVolume(1.0f);
+        backgroundMusic.play();
     }
 
     @Override
@@ -463,6 +471,7 @@ public class MainGameplayScreen extends LevelScreen {
         // Check for player death and reset screen if needed
         if (player.getHealth() <= 0) {
             game.setScreen(new MainGameplayScreen(game));
+            backgroundMusic.stop();
             return;
         }
 
@@ -531,6 +540,7 @@ public class MainGameplayScreen extends LevelScreen {
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
             Gdx.input.setCursorCatched(false); // show mouse cursor again
+            backgroundMusic.pause();
             game.setScreen(new PauseMenuScreen(game, this)); // go back to main menu
         }
     }
@@ -551,6 +561,7 @@ public class MainGameplayScreen extends LevelScreen {
         super.dispose();
         mapManager.dispose();
         player.dispose();
+        backgroundMusic.dispose();
     }
 
     public Player getPlayer() {
@@ -583,4 +594,17 @@ public class MainGameplayScreen extends LevelScreen {
         ));
         grenadeExplosionSound.play(1.0f);  
     }
+
+    public void resumeMusic() {
+        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+            backgroundMusic.play();
+        }
+    }
+
+    public void stopMusic() {
+        if (backgroundMusic != null) {
+            backgroundMusic.stop();
+        }
+    }
 }
+
