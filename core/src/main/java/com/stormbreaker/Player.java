@@ -59,6 +59,8 @@ public class Player extends Character implements Disposable {
     private static final float STOP_BLEED_HOLD_TIME = 5f;
     private static final float BLEED_HEAL_AMOUNT = 20f;
 
+    private boolean isDead = false;
+
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
         this.camera = camera;
@@ -88,6 +90,9 @@ public class Player extends Character implements Disposable {
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
+        // Return early if player is dead
+        if (isDead) return;
+
         float moveAmount = speed * delta;
         float proposedX;
         float proposedY;
@@ -214,7 +219,9 @@ public class Player extends Character implements Disposable {
             if (bleedTimer >= 1f) {
                 health -= BLEED_DAMAGE_PER_SECOND;
                 bleedTimer = 0f;
-                if (health < 0) health = 0;
+                if (health <= 0) {
+                    die();
+                }
             }
             // Handle stopping bleed with F key
             if (Gdx.input.isKeyPressed(Input.Keys.F)) {
@@ -313,10 +320,10 @@ public class Player extends Character implements Disposable {
         return "None";
     }
     
-    // Add method to fire the current weapon
+    // method to fire the current weapon
     public Bullet fireWeapon(float x, float y, float dirX, float dirY) {
         if (isReloading) {
-            return null; // Can't fire while reloading
+            return null; // can't fire while reloading
         }
         
         if (currentWeapon != null) {
@@ -325,10 +332,10 @@ public class Player extends Character implements Disposable {
         return null;
     }
     
-    // Add method to fire the current weapon with spread multiplier
+    // method to fire the current weapon with spread multiplier
     public Bullet fireWeapon(float x, float y, float dirX, float dirY, float spreadMultiplier) {
         if (isReloading) {
-            return null; // Can't fire while reloading
+            return null; // can't fire while reloading
         }
         
         if (currentWeapon != null) {
@@ -337,16 +344,10 @@ public class Player extends Character implements Disposable {
         return null;
     }
     
-    // Special method for shotgun
+    // special method for shotgun - delegates to version with spread multiplier using default value
     public Array<Bullet> fireShotgun(float x, float y, float dirX, float dirY) {
-        if (isReloading) {
-            return null; // Can't fire while reloading
-        }
-        
-        if (currentWeapon != null && currentWeapon instanceof Shotgun) {
-            return ((Shotgun) currentWeapon).fireShotgun(x, y, dirX, dirY, this);
-        }
-        return null;
+        // Call the version with spread multiplier using default value of 1.0f
+        return fireShotgun(x, y, dirX, dirY, 1.0f);
     }
 
     // Special method for shotgun with spread multiplier
@@ -488,7 +489,41 @@ public class Player extends Character implements Disposable {
             isBleeding = true;
             bleedTimer = 0f;
         }
-        if (health < 0) health = 0;
+        if (health <= 0) {
+            die();
+        }
+    }
+
+    // method to handle player death
+    private void die() {
+        if (isDead) return; // no calling this multiple times
+        
+        isDead = true;
+        health = 0;
+        
+        // stop all ongoing sound effects
+        if (stepSoundId != -1) {
+            stepSound.stop(stepSoundId);
+            stepSoundId = -1;
+        }
+        
+        if (reloadSoundId != -1) {
+            switchWeaponSound.stop(reloadSoundId);
+            reloadSoundId = -1;
+        }
+        
+        if (healSoundId != -1) {
+            switchWeaponSound.stop(healSoundId);
+            healSoundId = -1;
+        }
+        
+        // reset states
+        isReloading = false;
+        isWalking = false;
+    }
+    
+    public boolean isDead() {
+        return isDead;
     }
     
        // animated render method
