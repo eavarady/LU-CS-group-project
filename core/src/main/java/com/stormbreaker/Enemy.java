@@ -105,10 +105,10 @@ public class Enemy extends NPC {
      // Load death animation frames
         deathFrames = new Texture[] {
         	
-            new Texture(Gdx.files.internal("death1final.png")),
-            new Texture(Gdx.files.internal("death2final.png")),
-            new Texture(Gdx.files.internal("death3final.png")),
-            new Texture(Gdx.files.internal("death4final.png"))
+            new Texture(Gdx.files.internal("death11.png")),
+            new Texture(Gdx.files.internal("death22.png")),
+            new Texture(Gdx.files.internal("death33.png")),
+            new Texture(Gdx.files.internal("death44.png"))
             
         };
 
@@ -662,8 +662,8 @@ public class Enemy extends NPC {
             if (frame >= deathFrames.length) frame = deathFrames.length - 1; // Clamp to last frame
 
             Texture currentFrame = deathFrames[frame];
-            float drawWidth = currentFrame.getWidth() * 0.1f;   
-            float drawHeight = currentFrame.getHeight() * 0.1f;
+            float drawWidth = currentFrame.getWidth() * 0.8f;   
+            float drawHeight = currentFrame.getHeight() * 0.8f;
 
             batch.draw(
                 currentFrame,
