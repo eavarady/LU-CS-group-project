@@ -463,19 +463,17 @@ public class MainGameplayScreen extends LevelScreen {
             }
         }
 
-        // bullet is a white dot for now
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.WHITE);
+        spriteBatch.begin();
         for (int i = bullets.size - 1; i >= 0; i--) {
             Bullet b = bullets.get(i);
-            b.update(delta, enemies, mapManager.getCollisionRectangles(), player); // Pass obstacles to the bullet
-            b.render(shapeRenderer);
-
+            b.update(delta, enemies, mapManager.getCollisionRectangles(), player);
+            b.render(spriteBatch); // use sprite batch to render bullet with texture
             if (b.isOffScreen(viewport.getWorldWidth(), viewport.getWorldHeight())) {
-                bullets.removeIndex(i); // Remove bullet if it goes off-screen
+                bullets.removeIndex(i);
             }
         }
-        shapeRenderer.end();
+        spriteBatch.end();
+
 
         // Check for player death and reset screen if needed
         if (player.getHealth() <= 0) {
@@ -616,4 +614,3 @@ public class MainGameplayScreen extends LevelScreen {
         }
     }
 }
-
