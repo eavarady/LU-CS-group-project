@@ -2,10 +2,13 @@ package com.stormbreaker;
 
 import com.stormbreaker.tools.CollisionRectangle;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.MathUtils;
 
 public class Bullet {
     float x, y;
@@ -15,6 +18,10 @@ public class Bullet {
     private int damage = 50; // Default damage
     private boolean stopped = false; // Flag to indicate if the bullet has stopped
     private final Character owner; // or use a specific type if you want
+
+    // bullet texture
+    private static Texture bulletTexture;
+    private static boolean textureLoaded = false;
 
     public Bullet(float x, float y, float vx, float vy, Character owner) {
         this.x = x;
@@ -39,7 +46,7 @@ public class Bullet {
     public void setDamage(int damage) {
         this.damage = damage;
     }
-    
+
     public int getDamage() {
         return damage;
     }
@@ -107,9 +114,37 @@ public class Bullet {
         }
     }
 
+    // original circle drawing (not needed but left it since it dont break game)
     public void render(ShapeRenderer sr) {
         if (!stopped) {
             sr.circle(x, y, radius);
+        }
+    }
+
+    // drawing bullet texture
+    public void render(SpriteBatch sb) {
+        if (!stopped) {
+            if (!textureLoaded) {
+                bulletTexture = new Texture("bullet1.png");
+                textureLoaded = true;
+            }
+
+            float drawWidth = 16f;  
+            float drawHeight = 5f;
+
+            float angle = (float) Math.atan2(vy, vx) * MathUtils.radiansToDegrees;
+
+            sb.draw(
+                bulletTexture,
+                x - drawWidth / 2f, y - drawHeight / 2f,
+                drawWidth / 2f, drawHeight / 2f,
+                drawWidth, drawHeight,
+                1f, 1f,
+                angle,
+                0, 0,
+                bulletTexture.getWidth(), bulletTexture.getHeight(),
+                false, false
+            );
         }
     }
 
