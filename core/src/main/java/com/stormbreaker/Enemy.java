@@ -288,6 +288,10 @@ public class Enemy extends NPC {
 
         // BOMBER logic: chase like AGGRESSIVE, but no shooting, explodes on proximity
         if (type == EnemyType.BOMBER) {
+            // If ALERTED and no lastKnownPlayerPos, set it to player's current position (e.g., when shot)
+            if (state == EnemyState.ALERTED && lastKnownPlayerPos == null) {
+                lastKnownPlayerPos = new Vector2(player.getX(), player.getY());
+            }
             // Increase speed by 50%
             float bomberSpeed = speed * 1.5f;
             // Calculate vector to player
