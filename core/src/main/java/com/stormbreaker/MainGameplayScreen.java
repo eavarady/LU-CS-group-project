@@ -176,12 +176,21 @@ public class MainGameplayScreen extends LevelScreen {
         // shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         // shapeRenderer.end();
 
-        // draw the player
+        // draw the sprites in order: dead enemies first, then player, then live enemies
         spriteBatch.begin();
-        player.render(spriteBatch);
-        // render enemies
+        // first render dead enemies (player walks over them)
         for (Enemy e : enemies) {
-            e.render(spriteBatch);
+            if (e.isDead()) {
+                e.render(spriteBatch);
+            }
+        }
+        // then render the player
+        player.render(spriteBatch);
+        // and then the live enemies (they walk over the player)
+        for (Enemy e : enemies) {
+            if (!e.isDead()) {
+                e.render(spriteBatch);
+            }
         }
         spriteBatch.end();
 
