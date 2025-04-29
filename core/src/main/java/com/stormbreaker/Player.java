@@ -68,12 +68,12 @@ public class Player extends Character implements Disposable {
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
         switchWeaponSound = Gdx.audio.newSound(Gdx.files.internal("weapon_switch.wav"));
         
-        // Initialize weapons
+        // initialize weapons
         weapons.add(new Pistol());
         weapons.add(new Carbine());
         weapons.add(new Shotgun());
         
-        // Set default weapon (Carbine)
+        // set default weapon (carbine)
         currentWeapon = weapons.get(1);
         weaponTextures.put("Pistol", new Texture(Gdx.files.internal("player_sprite_pistol.png")));
         weaponTextures.put("Carbine", new Texture(Gdx.files.internal("player_sprite_carbine.png")));
@@ -92,7 +92,7 @@ public class Player extends Character implements Disposable {
         float proposedX;
         float proposedY;
 
-        // Check horizontal movement
+        // check horizontal movement
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             proposedX = x - moveAmount;
             collisionRectangle.move(proposedX - texture.getWidth() / 4f, y - texture.getHeight() / 4f);
@@ -108,7 +108,7 @@ public class Player extends Character implements Disposable {
             }
         }
 
-        // Check vertical movement
+        // chck vertical movement
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             proposedY = y + moveAmount;
             collisionRectangle.move(x - texture.getWidth() / 4f, proposedY - texture.getHeight() / 4f);
@@ -124,7 +124,7 @@ public class Player extends Character implements Disposable {
             }
         }
 
-        // Rotate to face mouse
+        // rotate to face mouse
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.input.getY();
         Vector3 worldCoordinates = camera.unproject(new Vector3(mouseX, mouseY, 0));
@@ -135,7 +135,7 @@ public class Player extends Character implements Disposable {
             rotation = (float) Math.toDegrees(Math.atan2(dy, dx)) - 90;
         }
 
-        // Update collision rectangle position
+        // rpdate collision rectangle position
         collisionRectangle.move(
             x - (texture.getWidth() / 4f),
             y - (texture.getHeight() / 4f)
@@ -391,10 +391,8 @@ public class Player extends Character implements Disposable {
         super.dispose();
     }
 
-    /**
-     * Starts the reload process for the current weapon
-     * @return true if reload started, false if not possible to reload
-     */
+    // starts the reload process for the current weapon
+    // @return true if reload started, false if not possible to reload
     public boolean startReload() {
         if (isReloading || currentWeapon == null || !currentWeapon.canReload()) {
             return false;
@@ -405,9 +403,7 @@ public class Player extends Character implements Disposable {
         return true;
     }
     
-    /**
-     * Completes the reload process
-     */
+    // completes the reload process
     private void finishReload() {
         if (currentWeapon != null) {
             currentWeapon.reload();
@@ -420,16 +416,12 @@ public class Player extends Character implements Disposable {
         }
     }
     
-    /**
-     * Checks if player is currently reloading
-     */
+    // checks if player is currently reloading
     public boolean isReloading() {
         return isReloading;
     }
     
-    /**
-     * Returns the reload progress as a value between 0 and 1
-     */
+    // returns the reload progress as a value between 0 and 1
     public float getReloadProgress() {
         if (!isReloading) {
             return 0f;
@@ -437,9 +429,7 @@ public class Player extends Character implements Disposable {
         return reloadTimer / reloadTime;
     }
     
-    /**
-     * Gets the current ammo in the weapon
-     */
+    // gets the current ammo in the weapon
     public int getCurrentAmmo() {
         if (currentWeapon == null) {
             return 0;
@@ -447,9 +437,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getCurrentAmmo();
     }
     
-    /**
-     * Gets the total ammo count including round in chamber if present
-     */
+    // gets the total ammo count including round in chamber if present
     public int getTotalAmmoCount() {
         if (currentWeapon == null) {
             return 0;
@@ -457,9 +445,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getTotalAmmoCount();
     }
     
-    /**
-     * Gets the magazine size of the current weapon
-     */
+    // gets the magazine size of the current weapon
     public int getMagazineSize() {
         if (currentWeapon == null) {
             return 0;
@@ -467,9 +453,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getMagazineSize();
     }
     
-    /**
-     * Gets the total magazines remaining for the current weapon
-     */
+    // gets the total magazines remaining for the current weapon
     public int getTotalMags() {
         if (currentWeapon == null) {
             return 0;
@@ -477,9 +461,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getTotalMags();
     }
     
-    /**
-     * Checks if the current weapon has a round in the chamber
-     */
+    // checks if the current weapon has a round in the chamber
     public boolean hasRoundInChamber() {
         if (currentWeapon == null) {
             return false;
@@ -487,9 +469,7 @@ public class Player extends Character implements Disposable {
         return currentWeapon.hasRoundInChamber();
     }
 
-    /**
-     * Gets the maximum number of magazines the player can carry for the current weapon
-     */
+    // gets the maximum number of magazines the player can carry for the current weapon
     public int getMaxMags() {
         if (currentWeapon == null) {
             return 0;
@@ -497,13 +477,13 @@ public class Player extends Character implements Disposable {
         return currentWeapon.getMaxMagsCapacity();
     }
 
-     //Applies damage to the player using a probabilistic damage model
+    // applies damage to the player using a probabilistic damage model
     public void takeDamage(int baseDamage) {
         DamageModel.HitResult hit = DamageModel.getHitResult();
         System.out.println("BodyPart Hit: " + hit.part);
         int finalDamage = Math.round(baseDamage * hit.multiplier);
         health -= finalDamage;
-        // Bleed effect
+        // bleed effect
         if (!isBleeding && Math.random() < hit.bleedChance) {
             isBleeding = true;
             bleedTimer = 0f;
@@ -516,6 +496,12 @@ public class Player extends Character implements Disposable {
         Texture frame = isWalking ? walkFrames.get(currentWalkFrame) : texture;
         float drawWidth = frame.getWidth();
         float drawHeight = frame.getHeight();
+        
+        // 90 degree correction when using walking animation frames
+        float renderRotation = rotation;
+        if (isWalking) {
+            renderRotation = rotation + 90f;
+        }
 
         batch.draw(
             frame,
@@ -527,7 +513,7 @@ public class Player extends Character implements Disposable {
             drawHeight,
             1f,
             1f,
-            rotation,
+            renderRotation,
             0,
             0,
             frame.getWidth(),
