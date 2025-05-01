@@ -1,15 +1,14 @@
 package com.stormbreaker;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 
 public class Grenade {
-    public static final float PPM = 100f; // pixels per meter for scalling for box2d
+    public static final float PPM = 100f; // pixels per meter for scaling for box2d
     private Body body;
     private float radius = 4.5f;
     private float fuseTime;
@@ -17,6 +16,16 @@ public class Grenade {
     private float distanceTraveled = 0f;
     private float maxTravelDistance;
     private Vector2 lastPosition;
+
+    private static Texture grenadeTexture; // grenade texture
+    private static Texture explosionTexture; // explosion sprite frames
+    private static Animation<TextureRegion> explosionAnimation; // for explosion animation
+
+    private float explosionTimer = 0f; //tracks time since explosion started
+    private boolean exploded = false;
+    private Vector2 explosionPosition = null;
+
+    private static final float BLINK_DURATION = 0.5f; //grenade blinks during last half sec
 
     public Grenade(World world, float x, float y, float tx, float ty, float fuseTime) {
         this.fuseTime = fuseTime;
@@ -27,11 +36,11 @@ public class Grenade {
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(x / PPM, y / PPM);
         this.body = world.createBody(bodyDef);
-
+        
         // Create circular shape
         CircleShape shape = new CircleShape();
         shape.setRadius(radius / PPM);
-
+        
         // Define fixture
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -41,7 +50,7 @@ public class Grenade {
         body.createFixture(fixtureDef);
         shape.dispose();
 
-        // Cgit alculate velocity
+        // Calculate velocity
         float dx = tx - x;
         float dy = ty - y;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
@@ -51,6 +60,22 @@ public class Grenade {
         body.setLinearVelocity(new Vector2(vx, vy));
 
         this.lastPosition = new Vector2(body.getPosition());
+
+        // load grenade texture
+        if (grenadeTexture == null) {
+            grenadeTexture = new Texture("Grenade.png");
+        }
+
+        // load explosion sprite sheet and create animation
+        if (explosionTexture == null) {
+            explosionTexture = new Texture("Explosion.png");
+            TextureRegion[][] tmp = TextureRegion.split(explosionTexture, 96, 96);
+            TextureRegion[] frames = new TextureRegion[12];
+            for (int i = 0; i < 12; i++) {
+                frames[i] = tmp[0][i];
+            }
+            explosionAnimation = new Animation<>(0.05f, frames); // 12 frames, 0.05s per frame
+        }
     }
 
     public void update(float delta) {
@@ -60,29 +85,74 @@ public class Grenade {
         distanceTraveled += currentPos.dst(lastPosition);
         lastPosition.set(currentPos);
 
-        if (distanceTraveled >= maxTravelDistance) {
+        if (!exploded && distanceTraveled >= maxTravelDistance) {
             body.setLinearVelocity(0, 0);
         }
 
-        if (timeAlive >= fuseTime) {
-            body.setLinearVelocity(0, 0); 
+        if (!exploded && timeAlive >= fuseTime) {
+            body.setLinearVelocity(0, 0);
+            exploded = true;
+            explosionPosition = new Vector2(body.getPosition());
+        }
+
+        if (exploded) {
+            explosionTimer += delta;
         }
     }
 
-    public void render(ShapeRenderer sr) {
-        Vector2 pos = body.getPosition();
-        sr.circle(pos.x * PPM, pos.y * PPM, radius);
+    // render grenade image with blink and scale
+    public void render(SpriteBatch batch) {
+        if (!exploded) {
+            Vector2 pos = body.getPosition();
 
+            // blink during last moments of fuse
+            boolean shouldDraw = true;
+            if (fuseTime - timeAlive <= BLINK_DURATION) {
+                shouldDraw = ((int)(timeAlive * 10) % 2 == 0); // blink every 0.1s
+            }
+
+            if (shouldDraw) {
+                float scale = 0.01f; // shrink sprite
+                float width = grenadeTexture.getWidth() * scale;
+                float height = grenadeTexture.getHeight() * scale;
+                float drawX = pos.x * PPM - width / 2f; // center horizontally
+                float drawY = pos.y * PPM - height / 2f;
+                batch.draw(grenadeTexture, drawX, drawY, width, height);
+            }
+        }
+    }
+
+    // render explosion animation once grenade detonates
+    public void renderExplosion(SpriteBatch batch) {
+        if (exploded && explosionTimer <= explosionAnimation.getAnimationDuration()) {
+            TextureRegion frame = explosionAnimation.getKeyFrame(explosionTimer, false);
+            float drawX = explosionPosition.x * PPM - 48;
+            float drawY = explosionPosition.y * PPM - 48;
+            batch.draw(frame, drawX, drawY);
+        }
     }
 
     public boolean isExpired() {
-        return timeAlive >= fuseTime;
+        return exploded && explosionTimer >= explosionAnimation.getAnimationDuration();
     }
 
     public Body getBody() {
         return body;
     }
+
     public float getRadius() {
         return radius;
+    }
+
+    // dispose textures 
+    public static void dispose() {
+        if (grenadeTexture != null) {
+            grenadeTexture.dispose();
+            grenadeTexture = null;
+        }
+        if (explosionTexture != null) {
+            explosionTexture.dispose();
+            explosionTexture = null;
+        }
     }
 }
