@@ -274,14 +274,20 @@ public class MainGameplayScreen extends LevelScreen {
 
         // detect G key release to throw grenade
         if (!isGKeyCurrentlyPressed && wasGKeyPressedLastFrame) {
-            float maxGrenadeDistance = 250f;
-            float grenadeAimAngle = MathUtils.atan2(dy, dx);
-            float clampedDistance = Math.min(distance, maxGrenadeDistance);
-            float targetX = player.getX() + clampedDistance * MathUtils.cos(grenadeAimAngle);
-            float targetY = player.getY() + clampedDistance * MathUtils.sin(grenadeAimAngle);
+            // only throw if player has grenades available
+            if (player.hasGrenades()) {
+                float maxGrenadeDistance = 250f;
+                float grenadeAimAngle = MathUtils.atan2(dy, dx);
+                float clampedDistance = Math.min(distance, maxGrenadeDistance);
+                float targetX = player.getX() + clampedDistance * MathUtils.cos(grenadeAimAngle);
+                float targetY = player.getY() + clampedDistance * MathUtils.sin(grenadeAimAngle);
 
-            Grenade grenade = new Grenade(world, player.getX(), player.getY(), targetX, targetY, 2f); // 2 seconds fuse time
-            grenades.add(grenade);
+                Grenade grenade = new Grenade(world, player.getX(), player.getY(), targetX, targetY, 2f); // 2 seconds fuse time
+                grenades.add(grenade);
+                
+                // decrement grenade count
+                player.useGrenade();
+            }
         }
 
         wasGKeyPressedLastFrame = isGKeyCurrentlyPressed;

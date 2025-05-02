@@ -30,6 +30,9 @@ public class Player extends Character implements Disposable {
     // Replace string weapon with actual Weapon class
     private Weapon currentWeapon;
     private Array<Weapon> weapons = new Array<>();
+    
+    // grenade inventory
+    private int grenadeCount = 2;
 
     private Sound stepSound;
     private long stepSoundId = -1; // ID for the currently looping sound
@@ -526,7 +529,26 @@ public class Player extends Character implements Disposable {
         return isDead;
     }
     
-       // animated render method
+    // grenade inventory methods
+    public int getGrenadeCount() {
+        return grenadeCount;
+    }
+    
+    public boolean hasGrenades() {
+        return grenadeCount > 0;
+    }
+    
+    public void useGrenade() {
+        if (grenadeCount > 0) {
+            grenadeCount--;
+        }
+    }
+    
+    public void addGrenades(int count) {
+        grenadeCount += count;
+    }
+    
+    // animated render method
     public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         Texture frame = isWalking ? walkFrames.get(currentWalkFrame) : texture;
         float drawWidth = frame.getWidth();

@@ -14,6 +14,7 @@ public class HUD {
     private Texture pistolIcon;
     private Texture carbineIcon;
     private Texture shotgunIcon;
+    private Texture grenadeIcon; 
 
     public HUD(BitmapFont font) {
         this.font = font;
@@ -22,6 +23,7 @@ public class HUD {
         pistolIcon = new Texture(Gdx.files.internal("hud_pistol1.png"));
         carbineIcon = new Texture(Gdx.files.internal("hud_carbine1.png"));
         shotgunIcon = new Texture(Gdx.files.internal("hud_shotgun1.png"));
+        grenadeIcon = new Texture(Gdx.files.internal("Grenade.png"));
     }
 
     public void render(SpriteBatch batch, Player player) {
@@ -118,5 +120,23 @@ public class HUD {
         shapeRenderer.setColor(healthColor);
         shapeRenderer.rect(barX, barY, (health / 100f) * barWidth, barHeight);
         shapeRenderer.end();
+        
+        // draw grenades as individual icons to the right of the health bar
+        batch.begin();
+        float grenadeIconSize = 24;
+        float grenadeSpacing = 5;
+        float grenadeStartX = barX + barWidth + 10; // pos to the right of health bar
+        float grenadeY = barY - grenadeIconSize/2 + barHeight/2; 
+        
+        // draw one icon for each grenade the player has
+        int grenadeCount = player.getGrenadeCount();
+        for (int i = 0; i < grenadeCount; i++) {
+            batch.draw(grenadeIcon, 
+                      grenadeStartX + (grenadeIconSize + grenadeSpacing) * i, 
+                      grenadeY, 
+                      grenadeIconSize, 
+                      grenadeIconSize);
+        }
+        batch.end();
     }
 }
