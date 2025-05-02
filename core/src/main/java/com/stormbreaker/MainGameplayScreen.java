@@ -482,24 +482,33 @@ public class MainGameplayScreen extends LevelScreen {
             return;
         }
 
-        // render grenades
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.BLACK);
+     // update grenades 
         for (int i = grenades.size - 1; i >= 0; i--) {
             Grenade g = grenades.get(i);
             g.update(delta);
-            Vector2 pos = g.getBody().getPosition();
-            shapeRenderer.circle(pos.x * Grenade.PPM, pos.y * Grenade.PPM, g.getRadius());
             if (g.isExpired()) {
-                // Create the explosion at the grenade's current position
+                Vector2 pos = g.getBody().getPosition();
                 createGrenadeExplosion(pos.x * Grenade.PPM, pos.y * Grenade.PPM);
-                
-                // Clean up the grenade
                 world.destroyBody(g.getBody());
                 grenades.removeIndex(i);
             }
         }
-        shapeRenderer.end();
+
+        // draw grenades
+        spriteBatch.begin();
+        for (Grenade g : grenades) {
+            g.render(spriteBatch); // draw grenade with blinking texture
+        }
+        spriteBatch.end();
+
+        
+        //render grenade explosion animations
+        spriteBatch.begin();
+        for (Grenade g : grenades) {
+            g.renderExplosion(spriteBatch);
+        }
+        spriteBatch.end();
+
 
         // RENDER COLLISION RECTANGLES FOR DEBUGGING
         // Draw map collision rectangles
