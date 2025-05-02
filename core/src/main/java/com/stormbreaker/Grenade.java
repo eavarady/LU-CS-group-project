@@ -24,6 +24,7 @@ public class Grenade {
     private float explosionTimer = 0f; //tracks time since explosion started
     private boolean exploded = false;
     private Vector2 explosionPosition = null;
+    private boolean damageTriggered = false; // to track if explosion damage has been applied
 
     private static final float BLINK_DURATION = 0.5f; //grenade blinks during last half sec
 
@@ -142,6 +143,16 @@ public class Grenade {
 
     public float getRadius() {
         return radius;
+    }
+
+    //check if explosion damage should be triggered
+    public boolean shouldTriggerDamage() {
+        return exploded && !damageTriggered;
+    }
+    
+    // mark the damage as triggered
+    public void markDamageTriggered() {
+        damageTriggered = true;
     }
 
     // dispose textures 

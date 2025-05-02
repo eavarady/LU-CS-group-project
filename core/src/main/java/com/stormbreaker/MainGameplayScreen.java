@@ -486,9 +486,16 @@ public class MainGameplayScreen extends LevelScreen {
         for (int i = grenades.size - 1; i >= 0; i--) {
             Grenade g = grenades.get(i);
             g.update(delta);
-            if (g.isExpired()) {
+            
+            // Check if we need to trigger explosion damage right at the start of the explosion
+            if (g.shouldTriggerDamage()) {
                 Vector2 pos = g.getBody().getPosition();
                 createGrenadeExplosion(pos.x * Grenade.PPM, pos.y * Grenade.PPM);
+                g.markDamageTriggered();
+            }
+            
+            // Only remove the grenade after its explosion animation is complete
+            if (g.isExpired()) {
                 world.destroyBody(g.getBody());
                 grenades.removeIndex(i);
             }
