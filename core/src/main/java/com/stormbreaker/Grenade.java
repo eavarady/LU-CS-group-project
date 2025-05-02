@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import java.util.Random;
 
 public class Grenade {
     public static final float PPM = 100f; // pixels per meter for scaling for box2d
@@ -16,6 +17,7 @@ public class Grenade {
     private float distanceTraveled = 0f;
     private float maxTravelDistance;
     private Vector2 lastPosition;
+    private float rotationAngle; // random rotation angle for the grenade sprite
 
     private static Texture grenadeTexture; // grenade texture
     private static Texture explosionTexture; // explosion sprite frames
@@ -77,6 +79,10 @@ public class Grenade {
             }
             explosionAnimation = new Animation<>(0.05f, frames); // 12 frames, 0.05s per frame
         }
+
+        // generate random rotation angle
+        Random random = new Random();
+        rotationAngle = random.nextFloat() * 360f;
     }
 
     public void update(float delta) {
@@ -118,7 +124,8 @@ public class Grenade {
                 float height = grenadeTexture.getHeight() * scale;
                 float drawX = pos.x * PPM - width / 2f; // center horizontally
                 float drawY = pos.y * PPM - height / 2f;
-                batch.draw(grenadeTexture, drawX, drawY, width, height);
+                // draw grenade sprite WITH random rotation
+                batch.draw(grenadeTexture, drawX, drawY, width / 2f, height / 2f, width, height, 1f, 1f, rotationAngle, 0, 0, grenadeTexture.getWidth(), grenadeTexture.getHeight(), false, false);
             }
         }
     }
