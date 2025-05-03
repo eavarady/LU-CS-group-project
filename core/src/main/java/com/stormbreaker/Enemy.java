@@ -111,6 +111,21 @@ public class Enemy extends NPC {
             new Texture(Gdx.files.internal("death44.png"))
             
         };
+        
+     // randon death frame for enemy death
+        Texture[] finalDeathFrames = new Texture[] {
+            new Texture(Gdx.files.internal("newdeath1.png")),
+            new Texture(Gdx.files.internal("newdeath2.png")),
+            new Texture(Gdx.files.internal("newdeath3.png")),
+            new Texture(Gdx.files.internal("newdeath4.png")),
+            new Texture(Gdx.files.internal("newdeath5.png")),
+            new Texture(Gdx.files.internal("death33.png"))
+        };
+
+        // replace last death frame with a random one
+        int randomIndex = (int)(Math.random() * finalDeathFrames.length);
+        deathFrames[deathFrames.length - 1] = finalDeathFrames[randomIndex];
+
 
         
      // Load death sound from assets
