@@ -119,10 +119,7 @@ public class Enemy extends NPC {
             new Texture(Gdx.files.internal("newdeath3.png")),
             new Texture(Gdx.files.internal("newdeath4.png")),
             new Texture(Gdx.files.internal("newdeath5.png")),
-            new Texture(Gdx.files.internal("death33.png")),
-            new Texture(Gdx.files.internal("death11.png")),
-            new Texture(Gdx.files.internal("death22.png")),
-            new Texture(Gdx.files.internal("death44.png"))
+            new Texture(Gdx.files.internal("death33.png"))
         };
 
         // replace last death frame with a random one
