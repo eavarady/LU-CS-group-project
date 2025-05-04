@@ -63,6 +63,10 @@ public class MainGameplayScreen extends LevelScreen {
     private Sound grenadeExplosionSound;
 
     private Music backgroundMusic;
+    
+    private float deathTimer = 0f;
+    private boolean deathTriggered = false;
+
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -480,13 +484,22 @@ public class MainGameplayScreen extends LevelScreen {
         }
         spriteBatch.end();
 
-
-        // Check for player death and reset screen if needed
-        if (player.getHealth() <= 0) {
-            game.setScreen(new MainGameplayScreen(game));
-            backgroundMusic.stop();
-            return;
+     // delay restart after death to show death frame
+        if (player.isDead()) { 
+            if (!deathTriggered) {
+                deathTriggered = true; // mark that we've started the death timer
+                deathTimer = 0f;
+            } else {
+                deathTimer += delta; // incrment timer
+                if (deathTimer >= 2f) { 
+                    backgroundMusic.stop();
+                    game.setScreen(new MainGameplayScreen(game)); // restart the level
+                    return;
+                }
+            }
         }
+
+       
 
      // update grenades 
         for (int i = grenades.size - 1; i >= 0; i--) {
