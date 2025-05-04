@@ -43,6 +43,10 @@ public class Player extends Character implements Disposable {
     private float walkFrameTime = 0f;
     private float walkFrameDuration = 0.1f; // seconds per frame
     private int currentWalkFrame = 0;
+    
+    private Array<Texture> pistolWalkFrames = new Array<>(); // for pistol animations
+    private Array<Texture> shotgunWalkFrames = new Array<>(); // for shotgun animations 
+
 
     
     private Map<String, Texture> weaponTextures = new HashMap<>();
@@ -63,6 +67,9 @@ public class Player extends Character implements Disposable {
     private static final float BLEED_HEAL_AMOUNT = 20f;
 
     private boolean isDead = false;
+    private Texture deathFrame;
+
+    
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
         super(x, y, speed, texturePath);
@@ -89,6 +96,27 @@ public class Player extends Character implements Disposable {
         for (int i = 0; i <=7; i++) {
             walkFrames.add(new Texture(Gdx.files.internal("walk_frame_" + i + ".png")));
         }
+        
+     // load pistol walk frames
+        for (int i = 1; i <= 8; i++) {
+            pistolWalkFrames.add(new Texture(Gdx.files.internal("pistol" + i + ".png")));
+        }
+
+        // load shotgun walk frames
+        for (int i = 1; i <= 4; i++) {
+            shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun" + i + ".png")));
+        }
+        
+     // random death frames for the player
+        Texture[] possibleDeathFrames = new Texture[] {
+            new Texture(Gdx.files.internal("playerdeath1.png")),
+            new Texture(Gdx.files.internal("playerdeath2.png")),
+            new Texture(Gdx.files.internal("playerdeath3.png"))
+        };
+        // randomly select one as the death frame
+        deathFrame = possibleDeathFrames[(int)(Math.random() * possibleDeathFrames.length)];
+
+
 
     }
 
@@ -392,6 +420,13 @@ public class Player extends Character implements Disposable {
         for (Texture tex : weaponTextures.values()) { 
             tex.dispose();
         }
+        
+        if (deathFrame != null) {
+            deathFrame.dispose();
+        }
+
+        
+        
         super.dispose();
     }
 
@@ -548,11 +583,32 @@ public class Player extends Character implements Disposable {
         grenadeCount += count;
     }
     
-    // animated render method
+ // animated render method
     public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
-        Texture frame = isWalking ? walkFrames.get(currentWalkFrame) : texture;
-        float drawWidth = frame.getWidth();
-        float drawHeight = frame.getHeight();
+        
+        Texture frame = texture; 
+        
+        if (isDead) {
+            frame = deathFrame;
+        } else if (isWalking) { 
+            if (currentWeapon instanceof Pistol) { // if pistol use pistol animation
+                frame = pistolWalkFrames.get(currentWalkFrame % pistolWalkFrames.size);
+            } else if (currentWeapon instanceof Shotgun) { // for shotgun
+                frame = shotgunWalkFrames.get(currentWalkFrame % shotgunWalkFrames.size);
+            } else { // alr existing walking frames
+                frame = walkFrames.get(currentWalkFrame % walkFrames.size);
+            }
+        } 
+
+        float drawWidth, drawHeight;
+        if (isDead) {// adjusting death frame sprite because png is too big
+            drawWidth = frame.getWidth() * 0.7f;  
+            drawHeight = frame.getHeight() * 0.7f;
+        } else {
+            drawWidth = frame.getWidth();
+            drawHeight = frame.getHeight();
+        }
+
         
         // 90 degree correction when using walking animation frames
         float renderRotation = rotation;
@@ -579,5 +635,6 @@ public class Player extends Character implements Disposable {
             false
         );
     }
+
 
 }
