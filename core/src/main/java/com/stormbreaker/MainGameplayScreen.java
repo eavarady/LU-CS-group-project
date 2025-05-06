@@ -468,6 +468,7 @@ public class MainGameplayScreen extends LevelScreen {
                 float spreadX = (float) Math.cos(angle);
                 float spreadY = (float) Math.sin(angle);
                 bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, e));
+                e.playShootSound(); // Play enemy shooting sound
                 e.setWantsToShoot(false); // Reset shooting intent
                 // Sound or muzzle flash here?
             }

@@ -22,8 +22,8 @@ public class Enemy extends NPC {
     private Texture[] deathFrames; // array for death frames textures
     private float deathElapsedTime = 0f;
     private float deathFrameDuration = 0.2f; // seconds per frame
- // Sound to play when the enemy dies
     private Sound deathSound;
+    private Sound shootSound; // Add this field for shooting sound
     private boolean dead = false;
     private final float enemyRadius;
     // the radius of the enemy for player detection, 200 degrees in front of the enemy
@@ -130,6 +130,8 @@ public class Enemy extends NPC {
         
      // Load death sound from assets
         deathSound = Gdx.audio.newSound(Gdx.files.internal("deathaudio.ogg"));
+        // Load shoot sound from assets (reuse pistol for now)
+        shootSound = Gdx.audio.newSound(Gdx.files.internal("carbine_shot.ogg"));
 
     }
 
@@ -788,5 +790,19 @@ public class Enemy extends NPC {
 
     public void setLevelScreenListener(LevelScreenListener listener) {
         this.levelScreenListener = listener;
+    }
+
+    // Call this when the enemy shoots
+    public void playShootSound() {
+        if (shootSound != null) {
+            shootSound.play(0.5f);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (deathSound != null) deathSound.dispose();
+        if (shootSound != null) shootSound.dispose();
+        super.dispose();
     }
 }
