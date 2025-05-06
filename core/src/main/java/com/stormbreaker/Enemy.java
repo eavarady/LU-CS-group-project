@@ -315,6 +315,31 @@ public class Enemy extends NPC {
                 wantsToShoot = false;
             }
             return;
+        } else if (type == EnemyType.AGGRESSIVE) {
+            // --- AGGRESSIVE CAUTIOUS SCANNING LOGIC ---
+            if (state == EnemyState.CAUTIOUS && soundTargetRotation != null) {
+                smoothRotateTowards(soundTargetRotation, delta);
+                float angleDiff = Math.abs(((rotation - soundTargetRotation + 540) % 360) - 180);
+                if (angleDiff < 2f) {
+                    soundTargetRotation = null;
+                }
+            }
+            if (state == EnemyState.CAUTIOUS && soundTargetRotation == null) {
+                scanTimer += delta;
+                if (scanTargetAngle == null || Math.abs(((rotation - scanTargetAngle + 540) % 360) - 180) < 2f) {
+                    if (scanTimer >= scanInterval) {
+                        scanTimer = 0f;
+                        float nextAngle = (rotation + 90f) % 360f;
+                        scanTargetAngle = nextAngle;
+                    }
+                }
+                if (scanTargetAngle != null) {
+                    smoothRotateTowards(scanTargetAngle, delta);
+                }
+            } else {
+                scanTimer = 0f;
+                scanTargetAngle = null;
+            }
         }
 
         // BOMBER logic: chase like AGGRESSIVE, but no shooting, explodes on proximity
