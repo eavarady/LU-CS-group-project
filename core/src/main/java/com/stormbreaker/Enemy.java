@@ -197,6 +197,10 @@ public class Enemy extends NPC {
                     this.soundTargetRotation = angleToSound;
                     if (state == EnemyState.UNAWARE) state = EnemyState.CAUTIOUS;
                     wantsToShoot = true;
+                    // Set cautious sound turn speed to rotationSpeed * 2
+                    if (state == EnemyState.CAUTIOUS) {
+                        this.currentRotationSpeed = rotationSpeed * 2f;
+                    }
                     break;
                 } else {
                     // AGGRESSIVE (default) logic
@@ -288,6 +292,8 @@ public class Enemy extends NPC {
                 // Turn and shoot at player
                 float angleToPlayer = (float) Math.toDegrees(Math.atan2(dy, dx));
                 this.targetRotation = angleToPlayer;
+                // Set fast turn speed when player enters cone of vision
+                this.currentRotationSpeed = fastRotationSpeed;
                 smoothRotateTowards(targetRotation, delta);
                 // Reaction timer logic
                 reactionTimer += delta;
