@@ -28,19 +28,19 @@ public class DamageModel {
             return new HitResult(BodyPart.HEAD, mult, 0.30f);
         } else if (r < 0.50f) {
             // Torso: 40%
-            return new HitResult(BodyPart.TORSO, 1.0f, 0.15f);
+            return new HitResult(BodyPart.TORSO, 1.0f, 0.915f);
         } else if (r < 0.575f) {
             // Left Arm: 7.5%
-            return new HitResult(BodyPart.LEFT_ARM, 0.75f, 0.20f);
+            return new HitResult(BodyPart.LEFT_ARM, 0.75f, 0.920f);
         } else if (r < 0.65f) {
             // Right Arm: 7.5%
-            return new HitResult(BodyPart.RIGHT_ARM, 0.75f, 0.20f);
+            return new HitResult(BodyPart.RIGHT_ARM, 0.75f, 0.920f);
         } else if (r < 0.825f) {
             // Left Leg: 17.5%
-            return new HitResult(BodyPart.LEFT_LEG, 0.8f, 0.25f);
+            return new HitResult(BodyPart.LEFT_LEG, 0.8f, 0.925f);
         } else {
             // Right Leg: 17.5%
-            return new HitResult(BodyPart.RIGHT_LEG, 0.8f, 0.25f);
+            return new HitResult(BodyPart.RIGHT_LEG, 0.8f, 0.925f);
         }
     }
 }

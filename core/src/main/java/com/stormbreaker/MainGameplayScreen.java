@@ -66,6 +66,15 @@ public class MainGameplayScreen extends LevelScreen {
     
     private float deathTimer = 0f;
     private boolean deathTriggered = false;
+    
+    // fields for "Hold F to heal" text
+    private BitmapFont bleedingTextFont;
+    private SpriteBatch bleedingTextBatch;
+    private float bleedingTextPulseTimer = 0f;
+    
+    // Fields for "Press R to reload" text
+    private BitmapFont reloadTextFont;
+    private float reloadTextPulseTimer = 0f;
 
 
     public MainGameplayScreen(StormbreakerGame game) {
@@ -148,6 +157,15 @@ public class MainGameplayScreen extends LevelScreen {
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(1.0f);
         backgroundMusic.play();
+        
+        // bleeding text font and batch
+        bleedingTextFont = new BitmapFont();
+        bleedingTextFont.getData().setScale(2.0f);
+        bleedingTextBatch = new SpriteBatch();
+        
+        // reload text font (using the same batch as bleeding text)
+        reloadTextFont = new BitmapFont();
+        reloadTextFont.getData().setScale(2.0f);
     }
 
     @Override
@@ -580,6 +598,50 @@ public class MainGameplayScreen extends LevelScreen {
 
         hud.render(hudBatch, player);
 
+        // print "Hold F to heal" text when player is bleeding
+        if (player.isBleeding()) {
+            // Update pulse timer
+            bleedingTextPulseTimer += delta;
+            
+            // calculate alpha to create a pulsing effect
+            float alpha = (float)(0.5f + 0.5f * Math.sin(bleedingTextPulseTimer * 6));
+            
+            // text color red with pulsing opacity
+            bleedingTextFont.setColor(1f, 0f, 0f, alpha);
+            
+            // draw text at the bottom center of the screen
+            String text = "Hold F to heal";
+            bleedingTextBatch.begin();
+            
+            // calculate text position
+            float x = (Gdx.graphics.getWidth() - bleedingTextFont.getData().scaleX * text.length() * 11) / 2f;
+            float y = 100f;
+            
+            bleedingTextFont.draw(bleedingTextBatch, text, x, y);
+            bleedingTextBatch.end();
+        }
+
+        // "Press R to reload" text when the player's magazine is empty
+        if (!player.isReloading() && player.getCurrentAmmo() == 0 && player.getTotalMags() > 0) {
+            // update pulse timer
+            reloadTextPulseTimer += delta;
+            
+            // alpha for pulsing effect 
+            float alpha = (float)(0.5f + 0.5f * Math.sin(reloadTextPulseTimer * 3));
+            
+            // yellow text color with pulsing opacity
+            reloadTextFont.setColor(1f, 1f, 0f, alpha);
+            String text = "Press R to reload";
+            bleedingTextBatch.begin();
+            
+            // calculate text position
+            float x = (Gdx.graphics.getWidth() - reloadTextFont.getData().scaleX * text.length() * 11) / 2f;
+            float y = player.isBleeding() ? 140f : 100f; // Position above healing text if both are showing
+            
+            reloadTextFont.draw(bleedingTextBatch, text, x, y);
+            bleedingTextBatch.end();
+        }
+
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
             Gdx.input.setCursorCatched(false); // show mouse cursor again
@@ -590,7 +652,6 @@ public class MainGameplayScreen extends LevelScreen {
 
     @Override
     public void resize(int width, int height) {
-        //System.out.println("Resizing to: " + width + "x" + height);
         viewport.update(width, height);
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
     }
@@ -601,6 +662,9 @@ public class MainGameplayScreen extends LevelScreen {
             world.dispose();
         }
         grenadeExplosionSound.dispose();
+        bleedingTextFont.dispose();
+        bleedingTextBatch.dispose();
+        reloadTextFont.dispose();
         super.dispose();
         mapManager.dispose();
         player.dispose();

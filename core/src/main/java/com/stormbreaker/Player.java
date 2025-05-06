@@ -121,8 +121,27 @@ public class Player extends Character implements Disposable {
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> mapCollisions) {
-        // Return early if player is dead
-        if (isDead) return;
+        // Return early if player is dead, but first make sure sounds are stopped
+        if (isDead || health <= 0) {
+            // Safety check - stop any sounds that might be playing
+            if (healSoundId != -1) {
+                switchWeaponSound.stop(healSoundId);
+                healSoundId = -1;
+            }
+            if (reloadSoundId != -1) {
+                switchWeaponSound.stop(reloadSoundId);
+                reloadSoundId = -1;
+            }
+            if (stepSoundId != -1) {
+                stepSound.stop(stepSoundId);
+                stepSoundId = -1;
+            }
+            // If we've found health <= 0 but isDead is false, properly die
+            if (!isDead && health <= 0) {
+                die();
+            }
+            return;
+        }
 
         float moveAmount = speed * delta;
         float proposedX;
@@ -524,7 +543,7 @@ public class Player extends Character implements Disposable {
         health -= finalDamage;
         // bleed effect
         if (!isBleeding && Math.random() < hit.bleedChance) {
-            isBleeding = true;
+                    isBleeding = true;
             bleedTimer = 0f;
         }
         if (health <= 0) {
@@ -550,14 +569,20 @@ public class Player extends Character implements Disposable {
             reloadSoundId = -1;
         }
         
+        // stop the healing sound
         if (healSoundId != -1) {
             switchWeaponSound.stop(healSoundId);
             healSoundId = -1;
         }
         
+        // stop all instances of the switchWeaponSound regardless of ID
+        switchWeaponSound.stop();
+        
         // reset states
         isReloading = false;
         isWalking = false;
+        isBleeding = false;        // Reset bleeding state
+        stopBleedTimer = 0f;       // Reset bleed timer
     }
     
     public boolean isDead() {
@@ -581,6 +606,11 @@ public class Player extends Character implements Disposable {
     
     public void addGrenades(int count) {
         grenadeCount += count;
+    }
+    
+    // checks if player is currently bleeding
+    public boolean isBleeding() {
+        return isBleeding;
     }
     
  // animated render method
