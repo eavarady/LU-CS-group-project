@@ -98,6 +98,10 @@ public class Enemy extends NPC {
     private float scanInterval = 1.5f; // seconds between scans
     private Float scanTargetAngle = null;
 
+    // --- ALERTED STATE TIMER ---
+    private float alertedTimer = 0f;
+    private static final float MIN_ALERTED_TIME = 1.0f; // seconds
+
     public Enemy(float x, float y, float speed, String texturePath) {
         super(x, y, speed, texturePath);
         this.enemyRadius = texture.getWidth() / 2f;
@@ -172,7 +176,17 @@ public class Enemy extends NPC {
 
         if (dead) return;
 
-        // --- SOUND DETECTION ---
+        // ALERTED STATE TIMER LOGIC
+        if (state == EnemyState.ALERTED && alertedTimer > 0f) {
+            alertedTimer -= delta;
+            // Always rotate towards targetRotation while timer is active
+            smoothRotateTowards(targetRotation, delta);
+            // Prevent state from being changed away from ALERTED until timer expires
+            // (return early to skip other state logic)
+            if (alertedTimer > 0f) return;
+        }
+
+        // SOUND DETECTION
         for (SoundEvent se : soundEvents) {
             float dist = Vector2.dst(x, y, se.getPosition().x, se.getPosition().y);
             if (dist <= se.getCurrentRadius()) {
@@ -662,11 +676,9 @@ public class Enemy extends NPC {
         float dy = targetY - this.y;
         float angleToTarget = (float) Math.toDegrees(Math.atan2(dy, dx));
         this.targetRotation = angleToTarget;
-        // Instantly set state to ALERTED so AI logic can take over
         this.state = EnemyState.ALERTED;
-        this.currentRotationSpeed = fastRotationSpeed; // Turn fast when hit
-        // Optionally, snap rotation or let update() handle smooth turning
-        // Here, we just set the target, update() will rotate smoothly
+        this.currentRotationSpeed = fastRotationSpeed;
+        this.alertedTimer = MIN_ALERTED_TIME; // Start/reset the alert timer
     }
 
     @Override
