@@ -1,12 +1,19 @@
 package com.stormbreaker;
 
+import java.util.Random;
+
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
-import java.util.Random;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 public class Grenade {
     public static final float PPM = 100f; // pixels per meter for scaling for box2d
@@ -29,6 +36,9 @@ public class Grenade {
     private boolean damageTriggered = false; // to track if explosion damage has been applied
 
     private static final float BLINK_DURATION = 0.5f; //grenade blinks during last half sec
+
+    private static Sound pistolSound; // static so all grenades share
+    private Array<SoundEvent> soundEventsRef; // reference to main soundEvents array
 
     public Grenade(World world, float x, float y, float tx, float ty, float fuseTime) {
         this.fuseTime = fuseTime;
@@ -83,6 +93,8 @@ public class Grenade {
         // generate random rotation angle
         Random random = new Random();
         rotationAngle = random.nextFloat() * 360f;
+
+        this.body.setUserData(this); // So we can identify the grenade in contacts
     }
 
     public void update(float delta) {
@@ -171,6 +183,28 @@ public class Grenade {
         if (explosionTexture != null) {
             explosionTexture.dispose();
             explosionTexture = null;
+        }
+    }
+
+    public static void setPistolSound(Sound sound) {
+        pistolSound = sound;
+    }
+
+    public void setSoundEventsRef(Array<SoundEvent> soundEvents) {
+        this.soundEventsRef = soundEvents;
+    }
+
+    // Call this when the grenade bounces
+    public void onBounce() {
+        if (pistolSound != null) pistolSound.play(0.5f);
+        if (soundEventsRef != null) {
+            Vector2 pos = body.getPosition();
+            soundEventsRef.add(new SoundEvent(
+                new Vector2(pos.x * PPM, pos.y * PPM),
+                300f, // radius for bounce sound
+                0.05f, // short duration
+                SoundEvent.Type.GUNSHOT
+            ));
         }
     }
 }
