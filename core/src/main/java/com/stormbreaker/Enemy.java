@@ -40,7 +40,7 @@ public class Enemy extends NPC {
     // Collision rectangle for the enemy
     private final CollisionRectangle collisionRectangle;
     // Vision distance for the enemy
-    private final float visionDistance = 600f;
+    private final float visionDistance = 1000f;
     // Bool to check if the enemy wants to shoot
     private boolean wantsToShoot = false;
     // When the enemy wants to shoot
