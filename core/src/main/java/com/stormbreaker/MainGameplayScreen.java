@@ -675,9 +675,8 @@ public class MainGameplayScreen extends LevelScreen {
 
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
-            Gdx.input.setCursorCatched(false); // show mouse cursor again
-            backgroundMusic.pause();
-            game.setScreen(new PauseMenuScreen(game, this)); // go back to main menu
+            // Use the new pauseGame method to handle pausing properly
+            pauseGame();
         }
     }
 
@@ -744,5 +743,20 @@ public class MainGameplayScreen extends LevelScreen {
         if (backgroundMusic != null) {
             backgroundMusic.stop();
         }
+    }
+    
+     // stop all sounds to prevent sound looping issues.
+    public void pauseGame() {
+        // stop player sounds first 
+        player.stopAllSounds();
+        
+        // release mouse cursor
+        Gdx.input.setCursorCatched(false);
+        
+        // pause background music
+        backgroundMusic.pause();
+        
+        // transition to pause menu
+        game.setScreen(new PauseMenuScreen(game, this));
     }
 }

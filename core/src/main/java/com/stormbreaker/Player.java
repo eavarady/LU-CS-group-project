@@ -559,30 +559,37 @@ public class Player extends Character implements Disposable {
         health = 0;
         
         // stop all ongoing sound effects
-        if (stepSoundId != -1) {
-            stepSound.stop(stepSoundId);
-            stepSoundId = -1;
-        }
-        
-        if (reloadSoundId != -1) {
-            switchWeaponSound.stop(reloadSoundId);
-            reloadSoundId = -1;
-        }
-        
-        // stop the healing sound
-        if (healSoundId != -1) {
-            switchWeaponSound.stop(healSoundId);
-            healSoundId = -1;
-        }
-        
-        // stop all instances of the switchWeaponSound regardless of ID
-        switchWeaponSound.stop();
+        stopAllSounds();
         
         // reset states
         isReloading = false;
         isWalking = false;
         isBleeding = false;        // Reset bleeding state
         stopBleedTimer = 0f;       // Reset bleed timer
+    }
+    
+     // stops all active sounds from the player (footsteps, reload, healing)
+    public void stopAllSounds() {
+        // stop walking sound
+        if (stepSoundId != -1) {
+            stepSound.stop(stepSoundId);
+            stepSoundId = -1;
+        }
+        
+        // stop reload sound
+        if (reloadSoundId != -1) {
+            switchWeaponSound.stop(reloadSoundId);
+            reloadSoundId = -1;
+        }
+        
+        // stop healing sound
+        if (healSoundId != -1) {
+            switchWeaponSound.stop(healSoundId);
+            healSoundId = -1;
+        }
+        
+        //  stop any instances of switchWeaponSound not caught above
+        switchWeaponSound.stop();
     }
     
     public boolean isDead() {
