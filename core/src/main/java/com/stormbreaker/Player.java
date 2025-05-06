@@ -38,14 +38,14 @@ public class Player extends Character implements Disposable {
     private long stepSoundId = -1; // ID for the currently looping sound
     private boolean isWalking = false;
     private Random rand = new Random(); // used to randomize pitch
-  //walking animation
-    private Array<Texture> walkFrames = new Array<>();
     private float walkFrameTime = 0f;
     private float walkFrameDuration = 0.1f; // seconds per frame
     private int currentWalkFrame = 0;
     
-    private Array<Texture> pistolWalkFrames = new Array<>(); // for pistol animations
-    private Array<Texture> shotgunWalkFrames = new Array<>(); // for shotgun animations 
+    private Array<Texture> pistolWalkFrames = new Array<>(); // for pistol animations(have not modified yet)
+    private Array<Texture> shotgunWalkFrames = new Array<>(); // for shotgun animation(modified for beige color)
+    private Array<Texture> carbineWalkFrames = new Array<>(); //for carb animation(modified for color)
+
 
 
     
@@ -92,29 +92,35 @@ public class Player extends Character implements Disposable {
         weaponTextures.put("Shotgun", new Texture(Gdx.files.internal("player_sprite_shotgun.png")));
         this.texture = weaponTextures.get(currentWeapon.getName());
         
-         // load walk frames
-        for (int i = 0; i <=7; i++) {
-            walkFrames.add(new Texture(Gdx.files.internal("walk_frame_" + i + ".png")));
-        }
         
      // load pistol walk frames
         for (int i = 1; i <= 8; i++) {
             pistolWalkFrames.add(new Texture(Gdx.files.internal("pistol" + i + ".png")));
         }
 
-        // load shotgun walk frames
-        for (int i = 1; i <= 4; i++) {
-            shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun" + i + ".png")));
-        }
+        shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun11.png")));//adding new beige animation frames
+        shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun22.png")));
+        shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun33.png")));
+        shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun44.png")));
+
         
-     // random death frames for the player
+     // random death frames for the player(modified to be beige)
         Texture[] possibleDeathFrames = new Texture[] {
-            new Texture(Gdx.files.internal("playerdeath1.png")),
-            new Texture(Gdx.files.internal("playerdeath2.png")),
-            new Texture(Gdx.files.internal("playerdeath3.png"))
+            new Texture(Gdx.files.internal("playerdeath11.png")),
+            new Texture(Gdx.files.internal("playerdeath22.png")),
+            new Texture(Gdx.files.internal("playerdeath33.png"))
         };
+
         // randomly select one as the death frame
         deathFrame = possibleDeathFrames[(int)(Math.random() * possibleDeathFrames.length)];
+        
+     // load custon carb walk(beige player now)
+        for (int i = 0; i <= 7; i++) {
+            String filename = String.format("walk_frames_%d%d.png", i, i);
+            carbineWalkFrames.add(new Texture(Gdx.files.internal(filename)));
+        }
+
+
 
 
 
@@ -187,7 +193,8 @@ public class Player extends Character implements Disposable {
         float dy = worldCoordinates.y - y;
 
         if (dx != 0 || dy != 0) {
-            rotation = (float) Math.toDegrees(Math.atan2(dy, dx)) - 90;
+        	rotation = (float) Math.toDegrees(Math.atan2(dy, dx));//changed for new sprites
+
         }
 
         // rpdate collision rectangle position
@@ -201,17 +208,28 @@ public class Player extends Character implements Disposable {
                                 Gdx.input.isKeyPressed(Input.Keys.S) ||
                                 Gdx.input.isKeyPressed(Input.Keys.D);
         
-     // update walk animation frame
+     
+     // update walk animation frame for new sprites
         if (anyKeyPressed) {
             walkFrameTime += delta;
             if (walkFrameTime >= walkFrameDuration) {
-                currentWalkFrame = (currentWalkFrame + 1) % walkFrames.size;
-                walkFrameTime = 0f;
+                int frameCount = 1;
+                if (currentWeapon instanceof Carbine) { //use car animation
+                    frameCount = carbineWalkFrames.size;
+                } else if (currentWeapon instanceof Shotgun) {//use shotgun animation
+                    frameCount = shotgunWalkFrames.size;
+                } else if (currentWeapon instanceof Pistol) { // pistol
+                    frameCount = pistolWalkFrames.size;
+                }
+
+                currentWalkFrame = (currentWalkFrame + 1) % frameCount; //go to next frame
+                walkFrameTime = 0f; //reset
             }
         } else {
             currentWalkFrame = 0;
             walkFrameTime = 0f;
         }
+
 
 
         if (anyKeyPressed && !isWalking && stepSoundId == -1) {
@@ -621,37 +639,39 @@ public class Player extends Character implements Disposable {
     }
     
  // animated render method
-    public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
-        
-        Texture frame = texture; 
-        
+    public void render(SpriteBatch batch) {
+        Texture frame = texture;
+
         if (isDead) {
             frame = deathFrame;
-        } else if (isWalking) { 
+        } else if (isWalking) {
             if (currentWeapon instanceof Pistol) { // if pistol use pistol animation
                 frame = pistolWalkFrames.get(currentWalkFrame % pistolWalkFrames.size);
             } else if (currentWeapon instanceof Shotgun) { // for shotgun
                 frame = shotgunWalkFrames.get(currentWalkFrame % shotgunWalkFrames.size);
-            } else { // alr existing walking frames
-                frame = walkFrames.get(currentWalkFrame % walkFrames.size);
+            } else if (currentWeapon instanceof Carbine) { // for cabrine
+                frame = carbineWalkFrames.get(currentWalkFrame % carbineWalkFrames.size); 
             }
-        } 
+        } else { // for static sprites
+            if (currentWeapon instanceof Shotgun) {
+                frame = shotgunWalkFrames.first();
+            } else if (currentWeapon instanceof Carbine) {
+                frame = carbineWalkFrames.first();
+            } else if (currentWeapon instanceof Pistol) {
+                frame = pistolWalkFrames.first();
+            }
+        }
 
         float drawWidth, drawHeight;
-        if (isDead) {// adjusting death frame sprite because png is too big
-            drawWidth = frame.getWidth() * 0.7f;  
+        if (isDead) { // adjusting death frame sprite because png is too big
+            drawWidth = frame.getWidth() * 0.7f;
             drawHeight = frame.getHeight() * 0.7f;
         } else {
             drawWidth = frame.getWidth();
             drawHeight = frame.getHeight();
         }
 
-        
-        // 90 degree correction when using walking animation frames
-        float renderRotation = rotation;
-        if (isWalking) {
-            renderRotation = rotation + 90f;
-        }
+        float renderRotation = rotation; // no correction needed anymore
 
         batch.draw(
             frame,
@@ -672,6 +692,5 @@ public class Player extends Character implements Disposable {
             false
         );
     }
-
 
 }
