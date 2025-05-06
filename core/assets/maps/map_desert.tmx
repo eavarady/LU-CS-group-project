@@ -118,7 +118,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="Capa de Objetos 1" visible="0">
+ <objectgroup id="5" name="CollisionLayer">
   <object id="1" x="194.852" y="50.2513" width="45.1236" height="45.1236"/>
   <object id="2" x="270.905" y="111.059" width="50.0875" height="48.9241"/>
   <object id="3" x="288.081" y="16.3137" width="48.295" height="46.244"/>

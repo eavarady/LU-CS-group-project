@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="25" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="34">
  <tileset firstgid="1" source="stone_house_interior.tsx"/>
- <tileset firstgid="257" source="../house_inside.tsx"/>
- <tileset firstgid="481" source="../mountain_landscape.tsx"/>
+ <tileset firstgid="257" source="house_inside.tsx"/>
+ <tileset firstgid="481" source="mountain_landscape.tsx"/>
  <layer id="14" name="Ground" width="40" height="25">
   <data encoding="csv">
 559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,559,
@@ -119,7 +119,7 @@
 72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,72,0,72,72,72,72,72,72,72,72,72,72,72,0
 </data>
  </layer>
- <objectgroup id="19" name="Collisions">
+ <objectgroup id="19" name="CollisionLayer">
   <object id="6" x="865.15" y="2.31734" width="411.093" height="60.0454"/>
   <object id="7" x="865.412" y="58.588" width="28.0552" height="132.8"/>
   <object id="8" x="1249.7" y="64.4468" width="37.2806" height="335.905"/>

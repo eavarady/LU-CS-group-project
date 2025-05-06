@@ -82,6 +82,17 @@ public class MainGameplayScreen extends LevelScreen {
     private BitmapFont reloadTextFont;
     private float reloadTextPulseTimer = 0f;
 
+    private boolean levelCompleted = false;
+    private float levelTransitionTimer = 0f;
+
+    private float fadeAlpha = 0f;
+    private boolean startFadeOut = false;
+    private final float fadeDuration = 5.0f;
+
+    private BitmapFont levelCompleteFont;
+    private SpriteBatch levelCompleteBatch;
+
+
 
     public MainGameplayScreen(StormbreakerGame game) {
         super(game);
@@ -91,28 +102,32 @@ public class MainGameplayScreen extends LevelScreen {
     protected void initializeLevel() {
         // Initialize MapManager with the path to your Tiled map
         //System.out.println(Gdx.files.internal("maps/test_map.tmx").file().getAbsolutePath());
-        mapManager = new MapManager("maps/test_map.tmx");
-        // Get map dimensions in world units
-        float mapWidth = mapManager.getMapWidth(); // Map width in world units
-        float mapHeight = mapManager.getMapHeight(); // Map height in world units
+        // Obtén la configuración del nivel actual
+        LevelConfig config = game.levelConfigs.get(game.currentLevelIndex);
 
-        // Initialize camera and viewport with map dimensions
+        // Carga el mapa del nivel
+        mapManager = new MapManager(config.mapPath);
+
+        // Obtener dimensiones del mapa
+        float mapWidth = mapManager.getMapWidth();
+        float mapHeight = mapManager.getMapHeight();
+
+        // Inicializar cámara y viewport
         camera = new OrthographicCamera();
-        viewport = new FitViewport(mapWidth, mapHeight, camera); // Set viewport size to match map
+        viewport = new FitViewport(mapWidth, mapHeight, camera);
         viewport.apply();
 
-        world = new World(new Vector2(0, 0), true); // no gravity, allow sleeping
+        // Crear el mundo físico
+        world = new World(new Vector2(0, 0), true);
 
-        // Create the player
-        player = new Player(100, 100, speed, "Player_sprite_v1.png", camera);
+        // Crear jugador en la posición indicada
+        player = new Player(config.playerSpawn.x, config.playerSpawn.y, speed, "Player_sprite_v1.png", camera);
 
-        // Add a few static enemies
-        enemies.add(new Enemy(400, 300, 80, "enemy_blob.png", Enemy.EnemyType.PASSIVE)); // PASSIVE
-        enemies.add(new Enemy(600, 400, 80, "enemy_blob.png")); // AGGRESSIVE (default)
-        enemies.add(new Enemy(800, 200, 80, "enemy_blob.png", Enemy.EnemyType.PASSIVE)); // PASSIVE
-        enemies.add(new Enemy(800, 600, 80, "enemy_blob.png")); // AGGRESSIVE (default)
-        enemies.add(new Enemy(100, 500, 80, "enemy_blob.png", Enemy.EnemyType.BOMBER)); // BOMBER
-        enemies.add(new Enemy(200, 300, 80, "enemy_blob.png", Enemy.EnemyType.BOMBER)); // BOMBER
+        // Crear enemigos desde la configuración
+        for (LevelConfig.EnemySpawn es : config.enemySpawns) {
+            enemies.add(new Enemy(es.position.x, es.position.y, 80, "enemy_blob.png", es.type));
+        }
+
         // --- Ensure all enemies have a pathfinder for A* navigation ---
         float cellSize = 32f; // You can adjust this for pathfinding granularity
         // Add 1 pixel to the enemy buffer to ensure a 1-pixel standoff from obstacles
@@ -197,6 +212,10 @@ public class MainGameplayScreen extends LevelScreen {
             @Override public void preSolve(Contact contact, Manifold oldManifold) {}
             @Override public void postSolve(Contact contact, ContactImpulse impulse) {}
         });
+
+    levelCompleteFont = new BitmapFont();
+    levelCompleteFont.getData().setScale(3f); // tamaño grande
+    levelCompleteBatch = new SpriteBatch();
     }
 
     @Override
@@ -673,6 +692,45 @@ public class MainGameplayScreen extends LevelScreen {
             bleedingTextBatch.end();
         }
 
+        // Check if all enemies are dead
+        if (!levelCompleted && areAllEnemiesDead()) {
+            levelCompleted = true;
+            levelTransitionTimer = 0f;
+        }
+
+        if (levelCompleted && !startFadeOut) {
+            startFadeOut = true;
+            levelTransitionTimer = 0f;
+        }
+        
+        if (startFadeOut) {
+            levelTransitionTimer += delta;
+            fadeAlpha = Math.min(levelTransitionTimer / fadeDuration, 1f);
+        
+            if (fadeAlpha >= 1f) {
+                backgroundMusic.stop();
+                if (game.currentLevelIndex < game.levelPaths.length - 1) {
+                    game.currentLevelIndex++;
+                    game.setScreen(new MainGameplayScreen(game));
+                } else {
+                    // All levels completed, go back to main menu
+                    backgroundMusic.stop();
+                    Gdx.input.setCursorCatched(false);
+                    game.setScreen(new MainMenuScreen(game));
+                }
+                return;
+            }
+        }    
+
+        // Fade-out overlay when level is completed
+        if (startFadeOut) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0f, 0f, 0f, fadeAlpha);
+            shapeRenderer.rect(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
             // Use the new pauseGame method to handle pausing properly
@@ -700,6 +758,8 @@ public class MainGameplayScreen extends LevelScreen {
         mapManager.dispose();
         player.dispose();
         backgroundMusic.dispose();
+        levelCompleteFont.dispose();
+        levelCompleteBatch.dispose();
     }
 
     public Player getPlayer() {
@@ -759,4 +819,11 @@ public class MainGameplayScreen extends LevelScreen {
         // transition to pause menu
         game.setScreen(new PauseMenuScreen(game, this));
     }
+
+    private boolean areAllEnemiesDead() {
+        for (Enemy e : enemies) {
+            if (!e.isDead()) return false;
+        }
+        return true;
+    }    
 }
