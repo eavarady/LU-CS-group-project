@@ -9,6 +9,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -87,10 +88,17 @@ public class MainGameplayScreen extends LevelScreen {
 
     private float fadeAlpha = 0f;
     private boolean startFadeOut = false;
-    private final float fadeDuration = 5.0f;
+    private final float fadeDuration = 2.5f;
 
     private BitmapFont levelCompleteFont;
     private SpriteBatch levelCompleteBatch;
+
+    private Texture victoryImage;
+    private float victoryAlpha = 0f;
+    private boolean showVictoryImage = false;
+    private float victoryTimer = 0f;
+    private enum VictoryState { NONE, FADING_IN, SHOWING, FADING_OUT }
+    private VictoryState victoryState = VictoryState.NONE;
 
 
 
@@ -100,33 +108,33 @@ public class MainGameplayScreen extends LevelScreen {
 
     @Override
     protected void initializeLevel() {
-        // Initialize MapManager with the path to your Tiled map
-        //System.out.println(Gdx.files.internal("maps/test_map.tmx").file().getAbsolutePath());
-        // Obtén la configuración del nivel actual
         LevelConfig config = game.levelConfigs.get(game.currentLevelIndex);
 
-        // Carga el mapa del nivel
         mapManager = new MapManager(config.mapPath);
 
-        // Obtener dimensiones del mapa
         float mapWidth = mapManager.getMapWidth();
         float mapHeight = mapManager.getMapHeight();
 
-        // Inicializar cámara y viewport
         camera = new OrthographicCamera();
         viewport = new FitViewport(mapWidth, mapHeight, camera);
         viewport.apply();
 
-        // Crear el mundo físico
         world = new World(new Vector2(0, 0), true);
-
-        // Crear jugador en la posición indicada
         player = new Player(config.playerSpawn.x, config.playerSpawn.y, speed, "Player_sprite_v1.png", camera);
 
-        // Crear enemigos desde la configuración
         for (LevelConfig.EnemySpawn es : config.enemySpawns) {
             enemies.add(new Enemy(es.position.x, es.position.y, 80, "enemy_blob.png", es.type));
         }
+
+        String[] victoryImages = {
+            "victory_labyrinth.png",
+            "victory_desert.png",
+            "victory_house.png"
+        };
+        victoryImage = new Texture(Gdx.files.internal(victoryImages[game.currentLevelIndex]));
+        
+        
+
 
         // --- Ensure all enemies have a pathfinder for A* navigation ---
         float cellSize = 32f; // You can adjust this for pathfinding granularity
@@ -698,32 +706,33 @@ public class MainGameplayScreen extends LevelScreen {
             levelTransitionTimer = 0f;
         }
 
-        if (levelCompleted && !startFadeOut) {
-            startFadeOut = true;
-            levelTransitionTimer = 0f;
-        }
-        
-        if (startFadeOut) {
+        // Check if the player is dead
+        if (levelCompleted) {
             levelTransitionTimer += delta;
-            fadeAlpha = Math.min(levelTransitionTimer / fadeDuration, 1f);
-        
-            if (fadeAlpha >= 1f) {
+
+            
+            if (levelTransitionTimer < fadeDuration) {
+                fadeAlpha = Math.min(levelTransitionTimer / fadeDuration, 1f);
+            }
+
+            if (levelTransitionTimer >= fadeDuration && levelTransitionTimer < fadeDuration + 3f) {
+            }
+            
+
+            if (levelTransitionTimer >= fadeDuration + 3f) {
                 backgroundMusic.stop();
                 if (game.currentLevelIndex < game.levelPaths.length - 1) {
                     game.currentLevelIndex++;
                     game.setScreen(new MainGameplayScreen(game));
                 } else {
-                    // All levels completed, go back to main menu
-                    backgroundMusic.stop();
                     Gdx.input.setCursorCatched(false);
                     game.setScreen(new MainMenuScreen(game));
                 }
                 return;
             }
-        }    
-
-        // Fade-out overlay when level is completed
-        if (startFadeOut) {
+        }
+        // Draw fade-out effect
+        if (fadeAlpha > 0f) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0f, 0f, 0f, fadeAlpha);
@@ -731,6 +740,17 @@ public class MainGameplayScreen extends LevelScreen {
             shapeRenderer.end();
             Gdx.gl.glDisable(GL20.GL_BLEND);
         }
+        // Draw level complete text
+        if (levelCompleted && levelTransitionTimer >= fadeDuration && levelTransitionTimer < fadeDuration + 3f) {
+            hudBatch.getProjectionMatrix().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            hudBatch.begin();
+            hudBatch.setColor(1f, 1f, 1f, 1f);
+            hudBatch.draw(victoryImage, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            hudBatch.end();
+            hudBatch.setProjectionMatrix(camera.combined);
+        }
+
+        
         // Escape key to exit
         if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
             // Use the new pauseGame method to handle pausing properly
@@ -760,6 +780,8 @@ public class MainGameplayScreen extends LevelScreen {
         backgroundMusic.dispose();
         levelCompleteFont.dispose();
         levelCompleteBatch.dispose();
+        if (victoryImage != null) victoryImage.dispose();
+
     }
 
     public Player getPlayer() {
