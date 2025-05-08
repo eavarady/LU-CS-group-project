@@ -15,9 +15,9 @@ public class Bullet {
     float vx, vy;
     float speed = 3000f;
     float radius = 2.0f;
-    private int damage = 50; // Default damage
-    private boolean stopped = false; // Flag to indicate if the bullet has stopped
-    private final Character owner; // or use a specific type if you want
+    private int damage = 50; 
+    private boolean stopped = false;
+    private final Character owner; 
 
     // bullet texture
     private static Texture bulletTexture;
@@ -52,9 +52,9 @@ public class Bullet {
     }
 
     public void update(float delta, Array<Enemy> enemies, Array<CollisionRectangle> obstacles, Player player) {
-        if (stopped) return; // If the bullet is stopped, do nothing
+        if (stopped) return; 
 
-        float stepSize = 5f; // Maximum distance the bullet can travel in one sub-step
+        float stepSize = 5f; // max distance the bullet can travel in one sub-step
         float distance = speed * delta; // Total distance the bullet will travel this frame
         int steps = Math.max(1, (int) (distance / stepSize)); // Number of sub-steps
         float stepDelta = delta / steps; // Time per sub-step
@@ -63,7 +63,7 @@ public class Bullet {
             float startX = x;
             float startY = y;
 
-            // Calculate the new position for this sub-step
+            // new position for this sub-step
             float endX = x + vx * speed * stepDelta;
             float endY = y + vy * speed * stepDelta;
 
@@ -156,9 +156,9 @@ public class Bullet {
     private boolean intersectsLine(float startX, float startY, float endX, float endY, Enemy enemy) {
         float enemyX = enemy.getX();
         float enemyY = enemy.getY();
-        float enemyRadius = enemy.getRadius(); // Use the enemy's hitbox radius
+        float enemyRadius = enemy.getRadius();
 
-        // Check if the line segment intersects the circle (enemy hitbox)
+        // Check if the line segment intersects the circle 
         return Intersector.intersectSegmentCircle(
             new Vector2(startX, startY),
             new Vector2(endX, endY),

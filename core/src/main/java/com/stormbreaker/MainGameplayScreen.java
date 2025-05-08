@@ -417,19 +417,19 @@ public class MainGameplayScreen extends LevelScreen {
                 }
             }
         }
-        // Draw crosshair with fixed-length hairs
+        //  crosshair with fixed-length hairs
         shapeRenderer.setColor(enemyInCrosshairAndVisible ? Color.RED : Color.WHITE);
         
-        // Left hair (inner radius to inner radius + fixed length)
+        // left hair
         shapeRenderer.line(cx - innerCircleRadius - RETICLE_HAIR_LENGTH, cy, cx - innerCircleRadius, cy);
         
-        // Right hair (inner radius to inner radius + fixed length)
+        // right hair
         shapeRenderer.line(cx + innerCircleRadius, cy, cx + innerCircleRadius + RETICLE_HAIR_LENGTH, cy);
         
-        // Bottom hair (inner radius to inner radius + fixed length)
+        // bottom hair
         shapeRenderer.line(cx, cy - innerCircleRadius - RETICLE_HAIR_LENGTH, cx, cy - innerCircleRadius);
         
-        // Top hair (inner radius to inner radius + fixed length)
+        // top hair
         shapeRenderer.line(cx, cy + innerCircleRadius, cx, cy + innerCircleRadius + RETICLE_HAIR_LENGTH);
 
         // remove mouse cursor and only keep the crosshair
@@ -439,14 +439,14 @@ public class MainGameplayScreen extends LevelScreen {
         // shapeRenderer.setColor(Color.RED);
         // shapeRenderer.circle(cx, cy, innerCircleRadius); // Use the inner circle radius
 
-        // Calculate the angle from player to mouse
+        //angle from player to mouse
         float baseAngle = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
 
-        // Calculate the left and right edge angles of the cone
+        //left and right edge angles of the cone
         float leftEdgeAngle = baseAngle - spreadAngle;
         float rightEdgeAngle = baseAngle + spreadAngle;
 
-        // Calculate the end points of the cone edges (use a long enough distance, e.g., 1000 units)
+        //end points of the cone edges 
         float coneLength = 1000f;
         float leftX = player.getX() + coneLength * MathUtils.cosDeg(leftEdgeAngle);
         float leftY = player.getY() + coneLength * MathUtils.sinDeg(leftEdgeAngle);
@@ -543,14 +543,13 @@ public class MainGameplayScreen extends LevelScreen {
                 float dirX = e.getShootDirX();
                 float dirY = e.getShootDirY();
                 // Add spread to enemy bullets (same as player pistol/carbine)
-                spreadAngle = 6.0f; // degrees, adjust as needed
+                spreadAngle = 6.0f;
                 float angle = (float) (Math.atan2(dirY, dirX) + Math.toRadians(com.badlogic.gdx.math.MathUtils.random(-spreadAngle, spreadAngle)));
                 float spreadX = (float) Math.cos(angle);
                 float spreadY = (float) Math.sin(angle);
                 bullets.add(new Bullet(bulletX, bulletY, spreadX, spreadY, e));
                 e.playShootSound(); // Play enemy shooting sound
                 e.setWantsToShoot(false); // Reset shooting intent
-                // Sound or muzzle flash here?
             }
         }
 

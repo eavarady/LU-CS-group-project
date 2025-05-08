@@ -8,15 +8,15 @@ public class Pistol extends Weapon {
     
     public Pistol() {
         super(
-            "Pistol",      // name
-            8f,          // fireRate (shots per second)
-            20,            // damage
-            3.0f,          // spreadAngle (degrees)
-            1.0f,          // reticleExpansionRate
-            5.0f,          // reticleContractionRate
-            15,            // magazineSize
-            4,             // startingMags
-            8,             // maxMags
+            "Pistol", // name
+            8f,// fireRate (shots per second)
+            20, // damage
+            3.0f, // spreadAngle (degrees)
+            1.0f, // reticleExpansionRate
+            5.0f, // reticleContractionRate
+            15, // magazineSize
+            4, // startingMags
+            8, // maxMags
             "pistol_shot.wav"
         );
     }

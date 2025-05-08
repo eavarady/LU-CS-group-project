@@ -1,5 +1,5 @@
 /*
- Abstract NPC class extending Character. To be extended by enemy and civilian NPC classes later.
+ Abstract NPC class extending Character. To be extended by enemy and maybe civilian NPC classes later.
  */
 
 package com.stormbreaker;

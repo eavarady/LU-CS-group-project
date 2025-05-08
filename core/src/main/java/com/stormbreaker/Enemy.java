@@ -768,7 +768,7 @@ public class Enemy extends NPC {
             // Uncomment below for flat damage instead of probabilistic
             // health -= amount;
             // AGGRESSIVE: 10% chance to become BOMBER if health <= 25
-            if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
+            if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.25) {
                 type = EnemyType.BOMBER;
             }
 
@@ -776,7 +776,7 @@ public class Enemy extends NPC {
                 dead = true;
 
                 // 1st roll: 25% chance to drop
-                int dropChanceRoll = (int)(Math.random() * 4);
+                int dropChanceRoll = (int)(Math.random() * 3);
                 if (dropChanceRoll == 0) {
                     // 2nd roll: which item to drop
                     int roll = (int)(Math.random() * 4);
