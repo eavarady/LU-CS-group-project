@@ -24,9 +24,19 @@ public class StormbreakerGame extends Game {
                 new LevelConfig.EnemySpawn(400, 300, Enemy.EnemyType.PASSIVE),
                 new LevelConfig.EnemySpawn(600, 400, Enemy.EnemyType.AGGRESSIVE),
                 new LevelConfig.EnemySpawn(800, 200, Enemy.EnemyType.PASSIVE),
-                new LevelConfig.EnemySpawn(800, 600, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(900, 200, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(600, 600, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(800, 600, Enemy.EnemyType.PASSIVE),
                 new LevelConfig.EnemySpawn(100, 500, Enemy.EnemyType.BOMBER),
-                new LevelConfig.EnemySpawn(200, 300, Enemy.EnemyType.BOMBER)
+                new LevelConfig.EnemySpawn(350, 300, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(200, 300, Enemy.EnemyType.BOMBER),
+                new LevelConfig.EnemySpawn(350, 500, Enemy.EnemyType.PASSIVE),
+                new LevelConfig.EnemySpawn(400, 100, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(400, 150, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(500, 100, Enemy.EnemyType.PASSIVE),
+                new LevelConfig.EnemySpawn(500, 150, Enemy.EnemyType.PASSIVE),
+                new LevelConfig.EnemySpawn(600, 100, Enemy.EnemyType.AGGRESSIVE),
+                new LevelConfig.EnemySpawn(600, 50, Enemy.EnemyType.AGGRESSIVE),
 
             })
         ));
