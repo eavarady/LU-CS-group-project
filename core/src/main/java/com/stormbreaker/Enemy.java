@@ -775,8 +775,8 @@ public class Enemy extends NPC {
             if (health <= 0) {
                 dead = true;
 
-                // 1st roll: 25% chance to drop
-                int dropChanceRoll = (int)(Math.random() * 4);
+                // 1st roll: 33% chance to drop
+                int dropChanceRoll = (int)(Math.random() * 3);
                 if (dropChanceRoll == 0) {
                     // 2nd roll: which item to drop
                     int roll = (int)(Math.random() * 4);
