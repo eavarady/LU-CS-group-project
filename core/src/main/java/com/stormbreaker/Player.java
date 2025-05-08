@@ -33,6 +33,12 @@ public class Player extends Character implements Disposable {
     
     // grenade inventory
     private int grenadeCount = 2;
+ // ammo magazine counts and limits
+    private int pistolMags = 2;
+    private int shotgunMags = 2;
+    private int carbineMags = 2;
+    private final int MAX_MAGS = 4;
+
 
     private Sound stepSound;
     private long stepSoundId = -1; // ID for the currently looping sound
@@ -482,15 +488,41 @@ public class Player extends Character implements Disposable {
     // completes the reload process
     private void finishReload() {
         if (currentWeapon != null) {
-            currentWeapon.reload();
+            boolean canReload = false;
+
+            // check if player has mags before reloading
+            if (currentWeapon instanceof Carbine) {
+                if (carbineMags > 0) {
+                    carbineMags--; // always lose 1 mag if not 0
+                    canReload = true;
+                }
+            } else if (currentWeapon instanceof Shotgun) {
+                if (shotgunMags > 0) {
+                    shotgunMags--;
+                    canReload = true;
+                }
+            } else if (currentWeapon instanceof Pistol) {
+                if (pistolMags > 0) {
+                    pistolMags--;
+                    canReload = true;
+                }
+            }
+
+            // only reload if a mag was consumed
+            if (canReload) {
+                currentWeapon.reload();
+            }
         }
+
         isReloading = false;
         reloadTimer = 0f;
+
         if (reloadSoundId != -1) {
             switchWeaponSound.stop(reloadSoundId);
             reloadSoundId = -1;
         }
     }
+
     
     // checks if player is currently reloading
     public boolean isReloading() {
@@ -610,6 +642,13 @@ public class Player extends Character implements Disposable {
         switchWeaponSound.stop();
     }
     
+         // heal by 50% of current HP, maxed at 100
+    public void applyMedkit() {
+        int healAmount = (int)(this.health * 0.5f);
+        this.health = Math.min(this.health + healAmount, 100);
+    }
+
+    
     public boolean isDead() {
         return isDead;
     }
@@ -637,6 +676,47 @@ public class Player extends Character implements Disposable {
     public boolean isBleeding() {
         return isBleeding;
     }
+    
+ // ammo accessors for hud and gameplay
+    public int getPistolMags() {
+        return pistolMags;
+    }
+    public int getShotgunMags() {
+        return shotgunMags;
+    }
+    public int getCarbineMags() {
+        return carbineMags;
+    }
+    
+ // handle pickup of ammo or medkit, returns true if picked
+    public boolean pickUpItem(String type) {
+        switch (type) {
+            case "PISTOL_AMMO":
+                if (pistolMags < MAX_MAGS) {
+                    pistolMags++;
+                    return true;
+                }
+                break;
+            case "SHOTGUN_AMMO":
+                if (shotgunMags < MAX_MAGS) {
+                    shotgunMags++;
+                    return true;
+                }
+                break;
+            case "CARBINE_AMMO":
+                if (carbineMags < MAX_MAGS) {
+                    carbineMags++;
+                    return true;
+                }
+                break;
+            case "MEDKIT":
+                applyMedkit();
+                return true;
+        }
+        return false; // not picked up (e.g., ammo full)
+    }
+
+
     
  // animated render method
     public void render(SpriteBatch batch) {

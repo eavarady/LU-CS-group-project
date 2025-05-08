@@ -85,6 +85,21 @@ public class Enemy extends NPC {
     private static final float MIN_MOVE_DIST = 2f; // minimum distance considered as movement
 
     private boolean hasExploded = false;
+    
+ // drop item system
+    public enum DropType { PISTOL_AMMO, SHOTGUN_AMMO, CARBINE_AMMO, MEDKIT }
+
+    private DropType dropType = null;
+    private Texture dropTexture = null;
+    private boolean dropCollected = false;
+    
+ // drop icons
+    private static final Texture pistolDropIcon = new Texture(Gdx.files.internal("pistolammo.png"));
+    private static final Texture shotgunDropIcon = new Texture(Gdx.files.internal("shotgunammo.png"));
+    private static final Texture carbineDropIcon = new Texture(Gdx.files.internal("carbineammo.png"));
+    private static final Texture medkitDropIcon = new Texture(Gdx.files.internal("medkit.png"));
+
+
 
     // Add this interface for grenade explosions
     public interface LevelScreenListener {
@@ -734,6 +749,15 @@ public class Enemy extends NPC {
             );
         }
     }
+    
+ // draw drop above enemy body
+    public void renderDrop(SpriteBatch batch) {
+        if (dead && dropTexture != null && !dropCollected) {
+            float iconSize = 16f;
+            batch.draw(dropTexture, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
+        }
+    }
+
 
     public void takeDamage(int amount) {
         if (!dead) {
@@ -747,10 +771,34 @@ public class Enemy extends NPC {
             if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
                 type = EnemyType.BOMBER;
             }
+
             if (health <= 0) {
                 dead = true;
+
+                // assign random drop on death
+                int roll = (int)(Math.random() * 4);
+                switch (roll) {
+                    case 0:
+                        dropType = DropType.PISTOL_AMMO;
+                        dropTexture = pistolDropIcon;
+                        break;
+                    case 1:
+                        dropType = DropType.SHOTGUN_AMMO;
+                        dropTexture = shotgunDropIcon;
+                        break;
+                    case 2:
+                        dropType = DropType.CARBINE_AMMO;
+                        dropTexture = carbineDropIcon;
+                        break;
+                    case 3:
+                        dropType = DropType.MEDKIT;
+                        dropTexture = medkitDropIcon;
+                        break;
+                }
+
                 // Play death sound once
                 deathSound.play();
+
                 // BOMBER: 25% chance to detonate on death
                 if (type == EnemyType.BOMBER && !hasExploded && Math.random() < 0.25) {
                     hasExploded = true;
@@ -761,6 +809,8 @@ public class Enemy extends NPC {
             }
         }
     }
+
+    
 
     public boolean isDead() {
         return dead;
@@ -849,4 +899,26 @@ public class Enemy extends NPC {
         if (shootSound != null) shootSound.dispose();
         super.dispose();
     }
+    
+ // accessors for drops
+    public DropType getDropType() {
+        return dropType;
+    }
+
+    public boolean isDropCollected() {
+        return dropCollected;
+    }
+
+    public void markDropCollected() {
+        dropCollected = true;
+    }
+
+    public float getDropX() {
+        return x;
+    }
+
+    public float getDropY() {
+        return y;
+    }
+
 }

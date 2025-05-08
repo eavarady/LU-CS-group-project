@@ -35,6 +35,8 @@ import com.stormbreaker.tools.MapManager;
 import com.stormbreaker.weapons.Carbine;
 import com.stormbreaker.weapons.Shotgun;
 import com.stormbreaker.weapons.Weapon;
+import com.stormbreaker.Enemy.DropType; // to use droptype from enemy class
+
 
 public class MainGameplayScreen extends LevelScreen {
 
@@ -262,6 +264,8 @@ public class MainGameplayScreen extends LevelScreen {
         for (Enemy e : enemies) {
             if (e.isDead()) {
                 e.render(spriteBatch);
+                e.renderDrop(spriteBatch); //show drops when enemy dead
+
             }
         }
         // then render the player
@@ -604,7 +608,25 @@ public class MainGameplayScreen extends LevelScreen {
         }
         spriteBatch.end();
 
-        
+     // check player collision with enemy item drops
+        for (Enemy e : enemies) {
+            if (!e.isDead() || e.isDropCollected() || e.getDropType() == null) continue;
+
+            float dropX = e.getDropX();
+            float dropY = e.getDropY();
+            float px = player.getX();
+            float py = player.getY();
+            float dropDistance = Vector2.dst(px, py, dropX, dropY); //renamed to avoid duplicate
+
+            if (dropDistance <= 20f) { // pickup range
+                DropType type = e.getDropType();
+                boolean picked = player.pickUpItem(type.name());
+                if (picked) {
+                    e.markDropCollected(); // hide the drop when player picks it up
+                }
+            }
+        }
+
         //render grenade explosion animations
         spriteBatch.begin();
         for (Grenade g : grenades) {
