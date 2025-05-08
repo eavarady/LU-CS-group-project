@@ -761,8 +761,12 @@ public class Enemy extends NPC {
 
     public void takeDamage(int amount) {
         if (!dead) {
-            health -= amount;
-
+            // Probabilistic damage model
+            DamageModel.HitResult hit = DamageModel.getHitResult();
+            int finalDamage = Math.round(amount * hit.multiplier);
+            health -= finalDamage;
+            // Uncomment below for flat damage instead of probabilistic
+            // health -= amount;
             // AGGRESSIVE: 10% chance to become BOMBER if health <= 25
             if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
                 type = EnemyType.BOMBER;
