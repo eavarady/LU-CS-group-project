@@ -8,15 +8,15 @@ public class Carbine extends Weapon {
     
     public Carbine() {
         super(
-            "Carbine",       // name
-            8f,              // fireRate (shots per second)
-            25,              // damage
-            2.5f,            // spreadAngle (degrees)
-            1.0f,            // reticleExpansionRate
-            5.0f,            // reticleContractionRate
-            30,              // magazineSize
-            2,               // startingMags
-            6,               // maxMags
+            "Carbine",// name
+            8f,  // fireRate (shots per second)
+            25, // damage
+            2.5f, // spreadAngle (degrees)
+            1.0f,  // reticleExpansionRate
+            5.0f,  // reticleContractionRate
+            30, // magazineSize
+            2,// startingMags
+            6, // maxMags
             "carbine_shot.ogg"
         );
     }
