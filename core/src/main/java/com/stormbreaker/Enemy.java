@@ -768,7 +768,7 @@ public class Enemy extends NPC {
             // Uncomment below for flat damage instead of probabilistic
             // health -= amount;
             // AGGRESSIVE: 10% chance to become BOMBER if health <= 25
-            if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
+            if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.25) {
                 type = EnemyType.BOMBER;
             }
 
