@@ -14,7 +14,11 @@ public class HUD {
     private Texture pistolIcon;
     private Texture carbineIcon;
     private Texture shotgunIcon;
-    private Texture grenadeIcon; 
+    private Texture grenadeIcon;
+    // for hud icons
+    private Texture pistolAmmoIcon;
+    private Texture shotgunAmmoIcon;
+    private Texture carbineAmmoIcon;
 
     public HUD(BitmapFont font) {
         this.font = font;
@@ -24,6 +28,10 @@ public class HUD {
         carbineIcon = new Texture(Gdx.files.internal("hud_carbine1.png"));
         shotgunIcon = new Texture(Gdx.files.internal("hud_shotgun1.png"));
         grenadeIcon = new Texture(Gdx.files.internal("Grenade.png"));
+        // load icons
+        pistolAmmoIcon = new Texture(Gdx.files.internal("pistolammo.png"));
+        shotgunAmmoIcon = new Texture(Gdx.files.internal("shotgunammo.png"));
+        carbineAmmoIcon = new Texture(Gdx.files.internal("carbineammo.png"));
     }
 
     public void render(SpriteBatch batch, Player player) {
@@ -68,7 +76,7 @@ public class HUD {
         float iconY = paddingY - lineSpacing * 2 - 25;
         float textOffsetX = 60;
         String weaponName = player.getCurrentWeaponName();
-        
+
         if (weaponName.equalsIgnoreCase("Pistol")) {
             weaponIcon = pistolIcon;
             iconSize = 48;
@@ -85,26 +93,39 @@ public class HUD {
             textOffsetX = 85;
         }
         batch.draw(weaponIcon, paddingX, iconY, iconSize, iconSize);
-        
+
         font.setColor(Color.WHITE);
-        //int currentAmmo = player.getCurrentAmmo();
         int currentAmmo = player.getTotalAmmoCount();
         int magazineSize = player.getMagazineSize();
         String ammoInfo = currentAmmo + "/" + magazineSize;
-        // Add ammo information: totalAmmoCount/magazineSize
-        //int totalAmmoCount = player.getTotalAmmoCount();
-        //int magazineSize = player.getMagazineSize();
-        //weaponDisplay += "  " + totalAmmoCount + "/" + magazineSize;
 
-        int totalMags = player.getTotalMags();
-        if (totalMags > 0) {
-            ammoInfo += "   ";
-            for (int i = 0; i < totalMags; i++) {
-                ammoInfo += "M ";
-            }
+        float ammoTextX = paddingX + textOffsetX;
+        float ammoTextY = paddingY - lineSpacing * 2;
+        font.draw(batch, ammoInfo, ammoTextX, ammoTextY);
+
+        float ammoIconSize = 16f;
+
+        // show 1 ammo icon next to chamber info with count
+        if (weaponName.equalsIgnoreCase("Pistol")) {
+            int count = player.getPistolMags();
+            float iconX = ammoTextX + 100;
+            float iconY2 = ammoTextY - ammoIconSize * 0.75f; // tweaked for visuals in hud
+            batch.draw(pistolAmmoIcon, iconX, iconY2, ammoIconSize, ammoIconSize);
+            font.draw(batch, "x" + count, iconX + ammoIconSize + 5, iconY2 + ammoIconSize * 0.8f);
+        } else if (weaponName.equalsIgnoreCase("Shotgun")) {
+            int count = player.getShotgunMags();
+            float iconX = ammoTextX + 100;
+            float iconY2 = ammoTextY - ammoIconSize * 0.75f;
+            batch.draw(shotgunAmmoIcon, iconX, iconY2, ammoIconSize, ammoIconSize);
+            font.draw(batch, "x" + count, iconX + ammoIconSize + 5, iconY2 + ammoIconSize * 0.8f);
+        } else if (weaponName.equalsIgnoreCase("Carbine")) {
+            int count = player.getCarbineMags();
+            float iconX = ammoTextX + 100;
+            float iconY2 = ammoTextY - ammoIconSize * 0.75f;
+            batch.draw(carbineAmmoIcon, iconX, iconY2, ammoIconSize, ammoIconSize);
+            font.draw(batch, "x" + count, iconX + ammoIconSize + 5, iconY2 + ammoIconSize * 0.8f);
         }
-        
-        font.draw(batch, ammoInfo, paddingX + textOffsetX, paddingY - lineSpacing * 2);
+
         batch.end();
 
         // --- Life bar ---
@@ -120,23 +141,34 @@ public class HUD {
         shapeRenderer.setColor(healthColor);
         shapeRenderer.rect(barX, barY, (health / 100f) * barWidth, barHeight);
         shapeRenderer.end();
-        
+
         // draw grenades as individual icons to the right of the health bar
         batch.begin();
         float grenadeIconSize = 24;
         float grenadeSpacing = 5;
         float grenadeStartX = barX + barWidth + 10; // pos to the right of health bar
-        float grenadeY = barY - grenadeIconSize/2 + barHeight/2; 
-        
+        float grenadeY = barY - grenadeIconSize / 2 + barHeight / 2;
+
         // draw one icon for each grenade the player has
         int grenadeCount = player.getGrenadeCount();
         for (int i = 0; i < grenadeCount; i++) {
-            batch.draw(grenadeIcon, 
-                      grenadeStartX + (grenadeIconSize + grenadeSpacing) * i, 
-                      grenadeY, 
-                      grenadeIconSize, 
-                      grenadeIconSize);
+            batch.draw(grenadeIcon,
+                    grenadeStartX + (grenadeIconSize + grenadeSpacing) * i,
+                    grenadeY,
+                    grenadeIconSize,
+                    grenadeIconSize);
         }
         batch.end();
+    }
+       //no idea if needed in this class but why not
+    public void dispose() {
+        pistolIcon.dispose();
+        carbineIcon.dispose();
+        shotgunIcon.dispose();
+        grenadeIcon.dispose();
+        pistolAmmoIcon.dispose();
+        shotgunAmmoIcon.dispose();
+        carbineAmmoIcon.dispose();
+        shapeRenderer.dispose();
     }
 }
