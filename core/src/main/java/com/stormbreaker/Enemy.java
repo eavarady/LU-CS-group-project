@@ -762,13 +762,16 @@ public class Enemy extends NPC {
     public void takeDamage(int amount) {
         if (!dead) {
             health -= amount;
+
             // AGGRESSIVE: 10% chance to become BOMBER if health <= 25
             if (type == EnemyType.AGGRESSIVE && health <= 25 && Math.random() < 0.99) {
                 type = EnemyType.BOMBER;
             }
+
             if (health <= 0) {
                 dead = true;
-             // assign random drop on death
+
+                // assign random drop on death
                 int roll = (int)(Math.random() * 4);
                 switch (roll) {
                     case 0:
@@ -789,11 +792,9 @@ public class Enemy extends NPC {
                         break;
                 }
 
-             
-                }
-
                 // Play death sound once
                 deathSound.play();
+
                 // BOMBER: 25% chance to detonate on death
                 if (type == EnemyType.BOMBER && !hasExploded && Math.random() < 0.25) {
                     hasExploded = true;
@@ -803,6 +804,8 @@ public class Enemy extends NPC {
                 }
             }
         }
+    }
+
     
 
     public boolean isDead() {
