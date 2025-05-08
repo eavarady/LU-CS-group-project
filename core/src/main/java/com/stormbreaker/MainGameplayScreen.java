@@ -29,13 +29,13 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.stormbreaker.Enemy.DropType;
 import com.stormbreaker.tools.AStarPathfinder;
 import com.stormbreaker.tools.CollisionRectangle;
 import com.stormbreaker.tools.MapManager;
 import com.stormbreaker.weapons.Carbine;
 import com.stormbreaker.weapons.Shotgun;
-import com.stormbreaker.weapons.Weapon;
-import com.stormbreaker.Enemy.DropType; // to use droptype from enemy class
+import com.stormbreaker.weapons.Weapon; // to use droptype from enemy class
 
 
 public class MainGameplayScreen extends LevelScreen {
@@ -534,9 +534,9 @@ public class MainGameplayScreen extends LevelScreen {
         }
 
         // Update and handle enemy shooting
-        for (Enemy e : enemies) {
-            // Use the new update method that includes soundEvents
-            e.update(delta, player, mapManager.getCollisionRectangles(), soundEvents);
+        for (int i = 0; i < enemies.size; i++) {
+            Enemy e = enemies.get(i);
+            e.update(delta, player, mapManager.getCollisionRectangles(), soundEvents, enemies);
             if (e.wantsToShoot()) {
                 float bulletX = e.getX();
                 float bulletY = e.getY();

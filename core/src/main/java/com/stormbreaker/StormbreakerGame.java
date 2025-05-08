@@ -25,7 +25,6 @@ public class StormbreakerGame extends Game {
                 new LevelConfig.EnemySpawn(600, 400, Enemy.EnemyType.AGGRESSIVE),
                 new LevelConfig.EnemySpawn(800, 200, Enemy.EnemyType.PASSIVE),
                 new LevelConfig.EnemySpawn(900, 200, Enemy.EnemyType.PASSIVE),
-                new LevelConfig.EnemySpawn(900, 200, Enemy.EnemyType.AGGRESSIVE),
                 new LevelConfig.EnemySpawn(500, 600, Enemy.EnemyType.AGGRESSIVE),
                 new LevelConfig.EnemySpawn(800, 600, Enemy.EnemyType.PASSIVE),
                 new LevelConfig.EnemySpawn(100, 500, Enemy.EnemyType.BOMBER),

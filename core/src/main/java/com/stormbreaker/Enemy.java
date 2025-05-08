@@ -108,12 +108,12 @@ public class Enemy extends NPC {
 
     private LevelScreenListener levelScreenListener;
 
-    // --- SCANNING FIELDS FOR PASSIVE CAUTIOUS ENEMIES ---
+    //SCANNING FIELDS FOR PASSIVE CAUTIOUS ENEMIES
     private float scanTimer = 0f;
     private float scanInterval = 1.5f; // seconds between scans
     private Float scanTargetAngle = null;
 
-    // --- ALERTED STATE TIMER ---
+    //ALERTED STATE TIMER
     private float alertedTimer = 0f;
     private static final float MIN_ALERTED_TIME = 1.0f; // seconds
 
@@ -180,7 +180,7 @@ public class Enemy extends NPC {
 
     
     // Unified update method: handles both vision and sound detection
-    public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions, Array<SoundEvent> soundEvents) {
+    public void update(float delta, Player player, Array<CollisionRectangle> mapCollisions, Array<SoundEvent> soundEvents, Array<Enemy> enemies) {
     	// Animate death and dispose after 5 seconds
     	if (dead && !disposeAfterDeath) {
     	    deathElapsedTime += delta;
@@ -231,7 +231,7 @@ public class Enemy extends NPC {
         }
 
         if (type == EnemyType.PASSIVE) {
-            // --- PASSIVE VISION LOGIC ---
+            //PASSIVE VISION LOGIC
             if (state == EnemyState.CAUTIOUS && soundTargetRotation != null) {
                 smoothRotateTowards(soundTargetRotation, delta);
                 // Optionally, clear soundTargetRotation if close enough
@@ -337,7 +337,7 @@ public class Enemy extends NPC {
             }
             return;
         } else if (type == EnemyType.AGGRESSIVE) {
-            // --- AGGRESSIVE CAUTIOUS SCANNING LOGIC ---
+            //AGGRESSIVE CAUTIOUS SCANNING LOGIC
             if (state == EnemyState.CAUTIOUS && soundTargetRotation != null) {
                 smoothRotateTowards(soundTargetRotation, delta);
                 float angleDiff = Math.abs(((rotation - soundTargetRotation + 540) % 360) - 180);
@@ -419,7 +419,7 @@ public class Enemy extends NPC {
                             break;
                         }
                     }
-                    if (!collides) {
+                    if (!collides && !isCollidingWithEnemies(x + moveX, y + moveY, enemies)) {
                         x += moveX;
                         y += moveY;
                         state = EnemyState.MOVING;
@@ -468,7 +468,7 @@ public class Enemy extends NPC {
                                     break;
                                 }
                             }
-                            if (!collides) {
+                            if (!collides && !isCollidingWithEnemies(x + moveX, y + moveY, enemies)) {
                                 x += moveX;
                                 y += moveY;
                                 state = EnemyState.MOVING;
@@ -527,7 +527,7 @@ public class Enemy extends NPC {
                         break;
                     }
                 }
-                if (!collides) {
+                if (!collides && !isCollidingWithEnemies(x + nudgeX, y + nudgeY, enemies)) {
                     x += nudgeX;
                     y += nudgeY;
                 } else {
@@ -603,7 +603,7 @@ public class Enemy extends NPC {
                                 break;
                             }
                         }
-                        if (!collides) {
+                        if (!collides && !isCollidingWithEnemies(x + moveX, y + moveY, enemies)) {
                             x += moveX;
                             y += moveY;
                             state = EnemyState.MOVING;
@@ -637,7 +637,7 @@ public class Enemy extends NPC {
         // If here, player is not visible
         reactionTimer = 0f;
         wantsToShoot = false;
-        // --- FIX: Always investigate lastKnownPlayerPos if set, even if playerRecentlySeen is false ---
+        //investigate lastKnownPlayerPos if set, even if playerRecentlySeen is false
         if (lastKnownPlayerPos != null) {
             pathRecalcCooldown -= delta;
             if (pathfinder != null && (currentPath == null || pathIndex >= currentPath.size || pathRecalcCooldown <= 0f)) {
@@ -664,7 +664,7 @@ public class Enemy extends NPC {
                                 break;
                             }
                         }
-                        if (!collides) {
+                        if (!collides && !isCollidingWithEnemies(x + moveX, y + moveY, enemies)) {
                             x += moveX;
                             y += moveY;
                             state = EnemyState.MOVING;
@@ -926,6 +926,22 @@ public class Enemy extends NPC {
 
     public float getDropY() {
         return y;
+    }
+
+    //helper method to check collision with other enemies
+    private boolean isCollidingWithEnemies(float proposedX, float proposedY, Array<Enemy> enemies) {
+        for (Enemy e : enemies) {
+            if (e == this || e.isDead()) continue;
+            CollisionRectangle otherRect = e.getCollisionRectangle();
+            // Create a temp rectangle for the proposed position
+            float tempX = proposedX - (texture.getWidth() / 4f);
+            float tempY = proposedY - (texture.getHeight() / 4f);
+            CollisionRectangle tempRect = new CollisionRectangle(tempX, tempY, collisionRectangle.getWidth(), collisionRectangle.getHeight());
+            if (tempRect.collisionCheck(otherRect)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
