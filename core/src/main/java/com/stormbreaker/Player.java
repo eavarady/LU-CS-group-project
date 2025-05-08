@@ -101,7 +101,8 @@ public class Player extends Character implements Disposable {
         
      // load pistol walk frames
         for (int i = 1; i <= 8; i++) {
-            pistolWalkFrames.add(new Texture(Gdx.files.internal("pistol" + i + ".png")));
+            pistolWalkFrames.add(new Texture(Gdx.files.internal("pistol" + i + "-1.png"))); // swapped for beige pistol walk frames
+;
         }
 
         shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun11.png")));//adding new beige animation frames
