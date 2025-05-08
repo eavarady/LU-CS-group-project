@@ -775,25 +775,32 @@ public class Enemy extends NPC {
             if (health <= 0) {
                 dead = true;
 
-                // assign random drop on death
-                int roll = (int)(Math.random() * 4);
-                switch (roll) {
-                    case 0:
-                        dropType = DropType.PISTOL_AMMO;
-                        dropTexture = pistolDropIcon;
-                        break;
-                    case 1:
-                        dropType = DropType.SHOTGUN_AMMO;
-                        dropTexture = shotgunDropIcon;
-                        break;
-                    case 2:
-                        dropType = DropType.CARBINE_AMMO;
-                        dropTexture = carbineDropIcon;
-                        break;
-                    case 3:
-                        dropType = DropType.MEDKIT;
-                        dropTexture = medkitDropIcon;
-                        break;
+                // 1st roll: 25% chance to drop
+                int dropChanceRoll = (int)(Math.random() * 4);
+                if (dropChanceRoll == 0) {
+                    // 2nd roll: which item to drop
+                    int roll = (int)(Math.random() * 4);
+                    switch (roll) {
+                        case 0:
+                            dropType = DropType.PISTOL_AMMO;
+                            dropTexture = pistolDropIcon;
+                            break;
+                        case 1:
+                            dropType = DropType.SHOTGUN_AMMO;
+                            dropTexture = shotgunDropIcon;
+                            break;
+                        case 2:
+                            dropType = DropType.CARBINE_AMMO;
+                            dropTexture = carbineDropIcon;
+                            break;
+                        case 3:
+                            dropType = DropType.MEDKIT;
+                            dropTexture = medkitDropIcon;
+                            break;
+                    }
+                } else {
+                    dropType = null;
+                    dropTexture = null;
                 }
 
                 // Play death sound once
