@@ -24,6 +24,7 @@ public class LevelSelectScreen implements Screen {
     private Stage stage;
     private Texture backgroundTex;
     private Texture level1Texture, level2Texture, level3Texture;
+    private Texture backTexture;
     private Sound clickSound;
 
     public LevelSelectScreen(StormbreakerGame game) {
@@ -39,6 +40,8 @@ public class LevelSelectScreen implements Screen {
         level1Texture = new Texture(Gdx.files.internal("level1crop.png"));
         level2Texture = new Texture(Gdx.files.internal("level2crop.png"));
         level3Texture = new Texture(Gdx.files.internal("level3crop.png"));
+        backTexture = new Texture(Gdx.files.internal("backcrop.png"));
+
 
         Image background = new Image(new TextureRegionDrawable(backgroundTex));
         background.setFillParent(true);
@@ -47,6 +50,7 @@ public class LevelSelectScreen implements Screen {
         ImageButton level1Button = createHoverButton(level1Texture);
         ImageButton level2Button = createHoverButton(level2Texture);
         ImageButton level3Button = createHoverButton(level3Texture);
+        ImageButton backButton = createHoverButton(backTexture);
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("click_button.mp3"));
 
@@ -83,6 +87,15 @@ public class LevelSelectScreen implements Screen {
             }
         });
 
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
+                game.setScreen(new MainMenuScreen(game));
+                dispose();
+            }
+        });
+
         Table table = new Table();
         table.setFillParent(true);
         table.center();
@@ -94,14 +107,19 @@ public class LevelSelectScreen implements Screen {
         float level1Aspect = (float) level1Texture.getWidth() / level1Texture.getHeight();
         float level2Aspect = (float) level2Texture.getWidth() / level2Texture.getHeight();
         float level3Aspect = (float) level3Texture.getWidth() / level3Texture.getHeight();
+        float backAspect = (float) backTexture.getWidth() / backTexture.getHeight();
 
         float level1Width = buttonHeight * level1Aspect;
         float level2Width = buttonHeight * level2Aspect;
         float level3Width = buttonHeight * level3Aspect;
+        float backWidth = buttonHeight * backAspect;
 
         table.add(level1Button).width(level1Width).height(buttonHeight).padBottom(spacing).row();
         table.add(level2Button).width(level2Width).height(buttonHeight).padBottom(spacing).row();
-        table.add(level3Button).width(level3Width).height(buttonHeight);
+        table.add(level3Button).width(level3Width).height(buttonHeight).padBottom(spacing).row();
+        table.add(backButton).width(backWidth).height(buttonHeight);
+        table.row().padTop(spacing);
+        
 
         table.setTouchable(Touchable.childrenOnly);
         stage.addActor(table);
@@ -143,6 +161,6 @@ public class LevelSelectScreen implements Screen {
         level1Texture.dispose();
         level2Texture.dispose();
         level3Texture.dispose();
-        clickSound.dispose();
+        backTexture.dispose();
     }
 }
