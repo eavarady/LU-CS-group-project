@@ -75,6 +75,8 @@ public class Player extends Character implements Disposable {
     private boolean isDead = false;
     private Texture deathFrame;
 
+    private Sound bandageSound;
+    private Sound medkitSound;
     
 
     public Player(float x, float y, float speed, String texturePath, OrthographicCamera camera) {
@@ -85,6 +87,9 @@ public class Player extends Character implements Disposable {
 
         stepSound = Gdx.audio.newSound(Gdx.files.internal("footsteps-on-tile-31653.ogg"));
         switchWeaponSound = Gdx.audio.newSound(Gdx.files.internal("weapon_switch.wav"));
+        bandageSound = Gdx.audio.newSound(Gdx.files.internal("bandageSound.wav"));
+        medkitSound = Gdx.audio.newSound(Gdx.files.internal("medkitSound.wav"));
+
         
         // initialize weapons
         weapons.add(new Pistol());
@@ -102,7 +107,7 @@ public class Player extends Character implements Disposable {
      // load pistol walk frames
         for (int i = 1; i <= 8; i++) {
             pistolWalkFrames.add(new Texture(Gdx.files.internal("pistol" + i + "-1.png"))); // swapped for beige pistol walk frames
-;
+
         }
 
         shotgunWalkFrames.add(new Texture(Gdx.files.internal("shotgun11.png")));//adding new beige animation frames
@@ -138,7 +143,7 @@ public class Player extends Character implements Disposable {
         if (isDead || health <= 0) {
             // Safety check - stop any sounds that might be playing
             if (healSoundId != -1) {
-                switchWeaponSound.stop(healSoundId);
+                bandageSound.stop(healSoundId);
                 healSoundId = -1;
             }
             if (reloadSoundId != -1) {
@@ -301,7 +306,7 @@ public class Player extends Character implements Disposable {
             // Handle stopping bleed with F key
             if (Gdx.input.isKeyPressed(Input.Keys.F)) {
                 if (healSoundId == -1) {
-                    healSoundId = switchWeaponSound.loop(0.7f);
+                    healSoundId = bandageSound.loop(0.7f);
                 }
                 stopBleedTimer += delta;
                 if (stopBleedTimer >= STOP_BLEED_HOLD_TIME) {
@@ -309,19 +314,19 @@ public class Player extends Character implements Disposable {
                     stopBleedTimer = 0f;
                     health = Math.min(health + BLEED_HEAL_AMOUNT, 100f);
                     if (healSoundId != -1) {
-                        switchWeaponSound.stop(healSoundId);
+                        bandageSound.stop(healSoundId);
                         healSoundId = -1;
                     }
                 }
             } else {
                 stopBleedTimer = 0f;
                 if (healSoundId != -1) {
-                    switchWeaponSound.stop(healSoundId);
+                    bandageSound.stop(healSoundId);
                     healSoundId = -1;
                 }
             }
         } else if (healSoundId != -1) {
-            switchWeaponSound.stop(healSoundId);
+            bandageSound.stop(healSoundId);
             healSoundId = -1;
         }
     }
@@ -468,6 +473,15 @@ public class Player extends Character implements Disposable {
         if (deathFrame != null) {
             deathFrame.dispose();
         }
+
+        if (bandageSound != null) {
+            bandageSound.dispose();
+        }
+
+        if (medkitSound != null) {
+            medkitSound.dispose();
+        }
+
 
         
         
@@ -635,7 +649,7 @@ public class Player extends Character implements Disposable {
         
         // stop healing sound
         if (healSoundId != -1) {
-            switchWeaponSound.stop(healSoundId);
+            bandageSound.stop(healSoundId);
             healSoundId = -1;
         }
         
@@ -695,23 +709,27 @@ public class Player extends Character implements Disposable {
             case "PISTOL_AMMO":
                 if (pistolMags < MAX_MAGS) {
                     pistolMags++;
+                    switchWeaponSound.play(1.0f);
                     return true;
                 }
                 break;
             case "SHOTGUN_AMMO":
                 if (shotgunMags < MAX_MAGS) {
                     shotgunMags++;
+                    switchWeaponSound.play(1.0f);
                     return true;
                 }
                 break;
             case "CARBINE_AMMO":
                 if (carbineMags < MAX_MAGS) {
                     carbineMags++;
+                    switchWeaponSound.play(1.0f);
                     return true;
                 }
                 break;
             case "MEDKIT":
                 applyMedkit();
+                medkitSound.play(1.0f); 
                 return true;
         }
         return false; // not picked up (e.g., ammo full)
