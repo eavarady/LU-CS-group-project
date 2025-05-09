@@ -23,11 +23,12 @@ application {
 }
 eclipse.project.name = appName + '-lwjgl3'
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    // Use Java 17 for compatibility with Linux environments
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 if (JavaVersion.current().isJava9Compatible()) {
-        compileJava.options.release.set(21)
+    compileJava.options.release.set(17)
 }
 
 dependencies {
@@ -49,10 +50,19 @@ def os = System.properties['os.name'].toLowerCase()
 
 run {
   workingDir = rootProject.file('assets').path
-// You can uncomment the next line if your IDE claims a build failure even when the app closed properly.
+  // You can uncomment the next line if your IDE claims a build failure even when the app closed properly.
   //setIgnoreExitValue(true)
 
-  if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
+  // macOS requires the -XstartOnFirstThread JVM argument
+  if (os.contains('mac')) {
+    jvmArgs += "-XstartOnFirstThread"
+  }
+  
+  // Add any Linux-specific settings if needed
+  if (os.contains('linux')) {
+    // No special args needed for Linux by default, but you can add them here if needed
+    // Example: jvmArgs += "-Djava.library.path=./libs/linux"
+  }
 }
 
 jar {
