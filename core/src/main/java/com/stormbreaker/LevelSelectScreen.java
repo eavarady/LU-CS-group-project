@@ -12,27 +12,21 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class MainMenuScreen implements Screen {
+public class LevelSelectScreen implements Screen {
 
     private final StormbreakerGame game;
     private Stage stage;
-    private Skin skin;
-    private Texture backgroundTexture;
-    private Texture playTexture;
-    private Texture exitTexture;
+    private Texture backgroundTex;
+    private Texture level1Texture, level2Texture, level3Texture;
     private Sound clickSound;
-    private Texture levelsTexture;
 
-
-    public MainMenuScreen(StormbreakerGame game) {
+    public LevelSelectScreen(StormbreakerGame game) {
         this.game = game;
     }
 
@@ -41,83 +35,84 @@ public class MainMenuScreen implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        backgroundTex = new Texture(Gdx.files.internal("pausebackround.png"));
+        level1Texture = new Texture(Gdx.files.internal("level1crop.png"));
+        level2Texture = new Texture(Gdx.files.internal("level2crop.png"));
+        level3Texture = new Texture(Gdx.files.internal("level3crop.png"));
 
-        backgroundTexture = new Texture(Gdx.files.internal("Main.png"));
-        playTexture = new Texture(Gdx.files.internal("playcrop.png"));
-        exitTexture = new Texture(Gdx.files.internal("exitcrop.png"));
-        levelsTexture = new Texture(Gdx.files.internal("levelscrop.png"));
-
-        Image background = new Image(new TextureRegionDrawable(backgroundTexture));
+        Image background = new Image(new TextureRegionDrawable(backgroundTex));
         background.setFillParent(true);
         stage.addActor(background);
 
-        ImageButton playButton = createHoverButton(playTexture);
-        ImageButton quitButton = createHoverButton(exitTexture);
-        ImageButton levelsButton = createHoverButton(levelsTexture);
+        ImageButton level1Button = createHoverButton(level1Texture);
+        ImageButton level2Button = createHoverButton(level2Texture);
+        ImageButton level3Button = createHoverButton(level3Texture);
 
-        playButton.addListener(new ClickListener() {
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click_button.mp3"));
+
+        level1Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play();
                 game.currentLevelIndex = 0;
+                game.menuMusic.stop();
                 game.setScreen(new MainGameplayScreen(game));
-                game.menuMusic.stop();
                 dispose();
             }
         });
 
-        quitButton.addListener(new ClickListener() {
+        level2Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 clickSound.play();
+                game.currentLevelIndex = 1;
                 game.menuMusic.stop();
-                Gdx.app.exit(); 
-            }
-        });
-
-        levelsButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                clickSound.play();
-                game.setScreen(new LevelSelectScreen(game));
+                game.setScreen(new MainGameplayScreen(game));
                 dispose();
             }
         });
 
-        
+        level3Button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                clickSound.play();
+                game.currentLevelIndex = 2;
+                game.menuMusic.stop();
+                game.setScreen(new MainGameplayScreen(game));
+                dispose();
+            }
+        });
+
         Table table = new Table();
         table.setFillParent(true);
         table.center();
 
         float screenHeight = Gdx.graphics.getHeight();
-        float buttonHeight = screenHeight * 0.18f;
-        float spacing = screenHeight * 0.03f;
+        float buttonHeight = screenHeight * 0.15f;
+        float spacing = screenHeight * 0.02f;
 
-        float playAspect = (float) playTexture.getWidth() / playTexture.getHeight();
-        float exitAspect = (float) exitTexture.getWidth() / exitTexture.getHeight();
-        float levelsAspect = (float) levelsTexture.getWidth() / levelsTexture.getHeight();
+        float level1Aspect = (float) level1Texture.getWidth() / level1Texture.getHeight();
+        float level2Aspect = (float) level2Texture.getWidth() / level2Texture.getHeight();
+        float level3Aspect = (float) level3Texture.getWidth() / level3Texture.getHeight();
 
-        float playWidth = buttonHeight * playAspect;
-        float exitWidth = buttonHeight * exitAspect;
-        float levelsWidth = buttonHeight * levelsAspect;
+        float level1Width = buttonHeight * level1Aspect;
+        float level2Width = buttonHeight * level2Aspect;
+        float level3Width = buttonHeight * level3Aspect;
 
-        table.add(playButton).width(playWidth).height(buttonHeight).padBottom(spacing).row();
-        table.add(levelsButton).width(levelsWidth).height(buttonHeight).padBottom(spacing).row();
-        table.add(quitButton).width(exitWidth).height(buttonHeight);
+        table.add(level1Button).width(level1Width).height(buttonHeight).padBottom(spacing).row();
+        table.add(level2Button).width(level2Width).height(buttonHeight).padBottom(spacing).row();
+        table.add(level3Button).width(level3Width).height(buttonHeight);
 
-        table.setTouchable(Touchable.childrenOnly); // Restrict inputs to the buttons only
+        table.setTouchable(Touchable.childrenOnly);
         stage.addActor(table);
-
-        clickSound = Gdx.audio.newSound(Gdx.files.internal("click_button.mp3"));
     }
-// Method to create the tint effect
+
     private ImageButton createHoverButton(Texture texture) {
         TextureRegionDrawable up = new TextureRegionDrawable(new TextureRegion(texture));
         Drawable hover = new TextureRegionDrawable(new TextureRegion(texture))
-                .tint(new Color(1f, 1f, 1f, 0.5f)); // Hover tint
+                .tint(new Color(1f, 1f, 1f, 0.5f));
 
-        ImageButtonStyle style = new ImageButtonStyle();
+        ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
         style.imageUp = up;
         style.imageOver = hover;
 
@@ -137,22 +132,17 @@ public class MainMenuScreen implements Screen {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
-
-    @Override
-    public void hide() {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
 
     @Override
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-        backgroundTexture.dispose();
-        playTexture.dispose();
-        exitTexture.dispose();
-        levelsTexture.dispose();
+        backgroundTex.dispose();
+        level1Texture.dispose();
+        level2Texture.dispose();
+        level3Texture.dispose();
+        clickSound.dispose();
     }
 }
