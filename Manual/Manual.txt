@@ -1,0 +1,114 @@
+STORMBREAKER USER MANUAL
+
+
+===========================
+
+Welcome to Stormbreaker, a top down 2D shooter game. You play as a lone operative in hostile territories, armed with weapons. This manual covers everything you need to know to play the game.
+
+
+------------------
+
+1- CONTROLS
+
+------------------
+
+Movement:
+
+W- Move up
+A- Move left
+S- Move down
+D- Move right
+
+Aiming:
+
+Mouse- Aim
+Mouse left click- Fire weapon
+
+Weapon Handling:
+
+E- Switch to next weapon
+Q- Switch to previous weapon
+R- Reload current gun
+
+Healing and Utility:
+F(Hold)- Stop bleeding(if you are bleeding, you will see a pop up message)
+Picking up Medkits – Increases cuurent health by 50%
+
+Grenades:
+
+Hold G and aim with your mouse, release G when ready to throw
+
+--------------------
+
+2- GAMEPLAY OVERVIEW
+
+--------------------
+
+- Objective: Kill all enemies to proceed to the next level.
+
+- Each enemy you kill may drop one of four items at random:
+
+    • Pistol Ammo
+    • Shotgun Ammo
+    • Carbine Ammo
+    • Medkit (instantly heals)
+
+- Pickups:
+
+   • You can hold up to 4 magazines per weapon type.
+   • Medkits heal 50% of your current HP, capped at 100.
+   • If you try to pick up ammo for a weapon type that's already full, the item remains on the ground.
+
+---------------------------
+
+3- ENEMY TYPES
+
+---------------------------
+
+1- AGGRESIVE
+
+2- PASSIVE
+
+3- BOMBER
+
+---------------------------
+
+4- HUD (HEADS-UP DISPLAY)
+
+---------------------------
+
+The HUD helps you manage combat with clear visuals.
+
+- Health bar: Helps you keep track of your current health, you will die if your health reaches 0.
+
+- Weapons icon and ammo: Shows equipped weapon and how much ammo is in the magazine.
+
+- Ammo reserves: Ammo icons with XN(Number of magazines you have)
+
+- Grenades: Small grenade icons appear next to health box(1 grenade per icon)
+
+---------------------------
+
+4- STRADEGY TIPS
+
+---------------------------
+
+- Reload wisely, every reload costs a magazine.
+
+- Don't ignore bleeding, take cover and stop it fast.
+
+- Bombers are deadly, shoot them before they get close.
+
+- Listen carefully, enemies react to sound events.
+
+
+
+
+
+
+
+
+
+
+
+
